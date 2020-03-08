@@ -7,3 +7,37 @@
   justify-content: center;
   color: white;
 }
+
+.map-container {
+  height: 400px;
+  display: flex;
+  margin-top: 20px;
+  background: #AAA;
+  color: #000;
+}
+
+.listing {
+  overflow: auto;
+  border-left: #000 solid;
+}
+
+.map {
+  width: 500px;
+  height: 100%;
+}
+
+#resultsTable {
+  width: 250px;
+}
+
+input {
+  width: 300px;
+  margin-right: 20px;
+}
+
+.details-container {
+  position: absolute;
+  right: 0;
+  height: 100vh;
+  width: 30%;
+}
