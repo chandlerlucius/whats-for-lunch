@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import Map from './Map';
+import Search from './Search';
 import Suggestions from './Suggestions';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
@@ -12,6 +13,8 @@ let socketTimeout;
 
 ReactDOM.render(<App />, document.querySelector('#root'));
 
+ReactDOM.render(<Search />, document.querySelector('.search-container'));
+
 ReactDOM.render(<Map />, document.querySelector('.map-container'));
 
 // If you want your app to work offline and load faster, you can change
@@ -21,27 +24,27 @@ serviceWorker.unregister();
 
 if (window) {
   window.addEventListener('DOMContentLoaded', function () {
-      let host = window.location.host;
-      host = host.replace('3000', '9000');
-      if (window.location.protocol === 'https:') {
-          url = `wss://${host}/locations`;
-      } else {
-        url = `ws://${host}/locations`;
-      }
-      start();
+    let host = window.location.host;
+    host = host.replace('3000', '9000');
+    if (window.location.protocol === 'https:') {
+      url = `wss://${host}/locations`;
+    } else {
+      url = `ws://${host}/locations`;
+    }
+    start();
   });
 }
 
 const clearSocketTimeout = function () {
   if (socketTimeout) {
-      clearTimeout(socketTimeout);
+    clearTimeout(socketTimeout);
   }
 }
 
 const setSocketTimeout = function () {
   console.log('Socket closed. Attempting reconnect in 5 seconds.');
   socketTimeout = setTimeout(function () {
-      start();
+    start();
   }, 5000);
 }
 
@@ -65,17 +68,17 @@ const start = function () {
       ReactDOM.render(<Suggestions locations={locations} />, document.querySelector('.suggestions-container'));
     }
   } catch (error) {
-      //Ignore error on purpose
+    //Ignore error on purpose
   }
 };
 
 const convertFormSubmission = function (form) {
-  form.addEventListener('submit', function(e) {
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
     const object = {};
     const formData = new FormData(form);
-    formData.forEach(function(value, key){
-        object[key] = value;
+    formData.forEach(function (value, key) {
+      object[key] = value;
     });
     const json = JSON.stringify(object);
     socket.send(json);
@@ -83,4 +86,3 @@ const convertFormSubmission = function (form) {
 };
 
 export default convertFormSubmission;
-  
