@@ -17,7 +17,7 @@ class Map extends React.Component {
   componentDidMount() {
     var map, places, infoWindow;
     var markers = [];
-  
+
     function setCenter(position) {
       map.setCenter({
         lat: position.coords.latitude,
@@ -25,7 +25,7 @@ class Map extends React.Component {
       });
       map.setZoom(12);
     }
-  
+
     function initMap() {
       map = new window.google.maps.Map(document.querySelector('.map'), {
         center: {
@@ -35,30 +35,30 @@ class Map extends React.Component {
         zoom: 3
       });
       navigator.geolocation.getCurrentPosition(setCenter);
-  
+
       infoWindow = new window.google.maps.InfoWindow({
         content: document.getElementById('info-content')
       });
-  
+
       places = new window.google.maps.places.PlacesService(map);
-  
+
       const autocomplete = new window.google.maps.places.Autocomplete(
         document.getElementById('restaurant-search'), {
-          types: ['establishment']
-        });
+        types: ['establishment']
+      });
       autocomplete.addListener('place_changed', onPlaceChanged);
-  
+
       const foodSearch = document.querySelector('#food-search');
       foodSearch.addEventListener('search', function () {
         search(foodSearch.value);
       });
-  
+
       const foodSearchButton = document.querySelector('#food-search-button');
       foodSearchButton.addEventListener('click', function () {
         search(foodSearch.value);
       });
     }
-  
+
     function onPlaceChanged() {
       var place = this.getPlace();
       if (place.geometry) {
@@ -66,18 +66,18 @@ class Map extends React.Component {
         map.setZoom(15);
       }
     }
-  
+
     function search(keyword) {
       if (keyword === '') {
         return;
       }
-  
+
       var search = {
         bounds: map.getBounds(),
         keyword: keyword,
         type: 'restaurant'
       };
-  
+
       places.nearbySearch(search, function (results, status) {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
           clearResults();
@@ -103,7 +103,7 @@ class Map extends React.Component {
         }
       });
     }
-  
+
     function clearMarkers() {
       for (var i = 0; i < markers.length; i++) {
         if (markers[i]) {
@@ -112,24 +112,24 @@ class Map extends React.Component {
       }
       markers = [];
     }
-  
+
     function dropMarker(i) {
       return function () {
         markers[i].setMap(map);
       };
     }
-    
+
     function addResult(result, i) {
       var results = document.getElementById('results');
       var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
       var markerIcon = 'https://developers.google.com/maps/documentation/javascript/images/marker_green' + markerLetter + '.png';
-  
+
       var tr = document.createElement('tr');
       tr.style.backgroundColor = (i % 2 === 0 ? '#F0F0F0' : '#FFFFFF');
       tr.onclick = function () {
         window.google.maps.event.trigger(markers[i], 'click');
       };
-  
+
       var iconTd = document.createElement('td');
       var nameTd = document.createElement('td');
       var icon = document.createElement('img');
@@ -143,30 +143,30 @@ class Map extends React.Component {
       tr.appendChild(nameTd);
       results.appendChild(tr);
     }
-  
+
     function clearResults() {
       var results = document.getElementById('results');
       while (results.childNodes[0]) {
         results.removeChild(results.childNodes[0]);
       }
     }
-  
+
     // Get the place details for a hotel. Show the information in an info window,
     // anchored on the marker for the hotel that the user selected.
     function showInfoWindow() {
       var marker = this;
       places.getDetails({
-          placeId: marker.placeResult.place_id
-        },
+        placeId: marker.placeResult.place_id
+      },
         function (place, status) {
           if (status !== window.google.maps.places.PlacesServiceStatus.OK) {
             return;
           }
           infoWindow.open(map, marker);
-          ReactDOM.render(<Details place={place}/>, document.querySelector('.details-container'));
+          ReactDOM.render(<Details place={place} />, document.querySelector('.details-container'));
         });
     }
-  
+
     initMap();
   }
 }
