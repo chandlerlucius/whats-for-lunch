@@ -4,7 +4,7 @@ import Map from './Map'
 import Login from './Login'
 import Search from './Search'
 import Suggestions from './Suggestions'
-import './App.css';
+import './index.css';
 
 let url;
 let socket;
