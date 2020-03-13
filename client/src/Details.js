@@ -1,17 +1,17 @@
 import React from 'react';
 import RestaurantDetails from './RestaurantDetails'
-import convertFormSubmission from './index.js'
+import { convertFormSubmissionToJSON } from './App'
 
 class Details extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {isToggleOn: true};
+    this.state = { isToggleOn: true };
     this.toggle = this.toggle.bind(this);
   }
 
   componentDidMount() {
     document.querySelector('.details-container').style.width = '25%';
-    convertFormSubmission(document.querySelector('.details-container form'));
+    convertFormSubmissionToJSON(document.querySelector('.details-container form'));
   }
 
   toggle() {
@@ -19,7 +19,7 @@ class Details extends React.Component {
     this.setState(state => ({
       isToggleOn: !state.isToggleOn
     }));
-    if(this.state.isToggleOn) {
+    if (this.state.isToggleOn) {
       root.style.width = '25%';
     } else {
       root.style.width = '35px';
@@ -30,11 +30,11 @@ class Details extends React.Component {
     return [
       <span key="toggle" className="toggle" onClick={this.toggle}>☰</span>,
       <div key="details-container" className="details">
-        <img className="photo" alt="Restaurant" src={this.props.place.photos[0].getUrl()}/>
+        <img className="photo" alt="Restaurant" src={this.props.place.photos[0].getUrl()} />
         <h1>{this.props.place.name}</h1>
-        <RestaurantDetails place={this.props.place}/>
+        <RestaurantDetails place={this.props.place} />
         <div className="detail-item">
-          <img className="detail-icon" alt="Address" src="//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png"/>
+          <img className="detail-icon" alt="Address" src="//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png" />
           <a className="address" target="_blank" rel="noopener noreferrer" href={this.props.place.url}>{this.props.place.formatted_address}</a>
         </div>
         <form method="POST" action="/locations/add">
