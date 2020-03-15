@@ -36,7 +36,7 @@ func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	status, err := authenticate(w, r)
 	if err != nil || status != http.StatusOK {
 		title := "Failure"
-		body := "User authentication failed!"
+		body := "Token is either invalid or session timed out. Please login again."
 		message := Message{status, title, body}
 		sendMessageAndLogError(w, message, err)
 		return
