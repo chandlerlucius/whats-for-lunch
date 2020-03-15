@@ -10,23 +10,30 @@ import * as serviceWorker from './serviceWorker';
 serviceWorker.unregister();
 
 document.addEventListener('DOMContentLoaded', function (event) {
-  let href = window.location.href;
-  href = href.replace('3000', '9000');
-
+  const href = window.location.href.replace('3000', '9000');
   const token = localStorage.getItem('token');
+  if(token === null) {
+    ReactDOM.render(<Login message='Enter username and password to begin.'/>, document.querySelector('.root'));
+  }
+
   const xhr = new XMLHttpRequest();
+  xhr.timeout = 500;
   xhr.open('POST', href + 'authenticate?token=' + token);
   xhr.onload = function () {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
-        ReactDOM.render(<App />, document.querySelector('#root'));
+        ReactDOM.render(<App />, document.querySelector('.root'));
       } else {
-        ReactDOM.render(<Login />, document.querySelector('#root'));
+        const json = JSON.parse(xhr.responseText);
+        ReactDOM.render(<Login message={json.body}/>, document.querySelector('.root'));
       }
     }
   }
   xhr.onerror = function () {
-    ReactDOM.render(<Login />, document.querySelector('#root'));
+    ReactDOM.render(<Login message="Error connecting to server. Try again later."/>, document.querySelector('.root'));
+  }
+  xhr.ontimeout = function () {
+    ReactDOM.render(<Login message="Error connecting to server. Try again later."/>, document.querySelector('.root'));
   }
   xhr.send();
 });
