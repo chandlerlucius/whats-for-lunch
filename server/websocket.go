@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func locationsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print(err)
@@ -38,7 +38,8 @@ func locationsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	clients[c] = true
-	getLocations(c)
+	getDocuments(c, "location")
+	getDocuments(c, "chat")
 	handleConnection(c)
 }
 
@@ -56,21 +57,39 @@ func handleConnection(c *websocket.Conn) {
 			break
 		}
 
-		addLocation(c, bytes)
+		websocketMessage := &WebsocketMessage{}
+		err1 := json.Unmarshal(bytes, websocketMessage)
+		if err1 != nil {
+			log.Print(err1)
+		}
+
+		if websocketMessage.Type == "chat" {
+			chatMessage := &ChatMessage{}
+			addDocument(c, bytes, chatMessage, "chat")
+		} else if websocketMessage.Type == "location" {
+			location := &Location{}
+			addDocument(c, bytes, location, "location")
+		}
+
 		for client := range clients {
 			if err != nil {
 				log.Printf("error: %v", err)
 			}
-			getLocations(client)
+
+			if websocketMessage.Type == "chat" {
+				getDocuments(client, "chat")
+			} else if websocketMessage.Type == "location" {
+				getDocuments(client, "location")
+			}
 		}
 	}
 }
 
-func getLocations(c *websocket.Conn) {
+func getDocuments(c *websocket.Conn, collectionName string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	collection := mongoClient.Database(database).Collection("location")
+	collection := mongoClient.Database(database).Collection(collectionName)
 	cur, err := collection.Find(ctx, bson.D{})
 	if err != nil {
 		log.Print(err)
@@ -86,17 +105,17 @@ func getLocations(c *websocket.Conn) {
 		}
 		results = append(results, &result)
 	}
+	var body bson.M = bson.M{"type": collectionName, "body": results}
 
-	err2 := c.WriteJSON(results)
+	err2 := c.WriteJSON(body)
 	if err2 != nil {
 		log.Print(err2)
 	}
 }
 
-func addLocation(c *websocket.Conn, bytes []byte) {
-	location := &Location{}
-	err := json.Unmarshal(bytes, location)
-	res, err1 := insertLocationIntoDatabase(location, "location")
+func addDocument(c *websocket.Conn, bytes []byte, data interface{}, collection string) {
+	err := json.Unmarshal(bytes, data)
+	res, err1 := insertIntoDatabase(data, collection)
 
 	if err != nil {
 		info := "Sorry, we encountered an error our end. It has been logged and will be fixed"
@@ -107,18 +126,31 @@ func addLocation(c *websocket.Conn, bytes []byte) {
 		log.Print(info, " : ", err1)
 	}
 	if res != nil {
-		info := "Added to DB succesffully with name: " + location.Name + " | id:" + res.InsertedID.(primitive.ObjectID).String()
+		info := "Added to DB succesffully with id:" + res.InsertedID.(primitive.ObjectID).String()
 		log.Print(info)
 	}
 }
 
-func insertLocationIntoDatabase(location *Location, collection string) (*mongo.InsertOneResult, error) {
+func insertIntoDatabase(data interface{}, collection string) (*mongo.InsertOneResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	mongoCollection := mongoClient.Database(database).Collection(collection)
-	res, err := mongoCollection.InsertOne(ctx, location)
+	res, err := mongoCollection.InsertOne(ctx, data)
 	return res, err
+}
+
+// WebsocketMessage contains a general message format from client
+type WebsocketMessage struct {
+	Type string                 `json:"type"`
+	Body map[string]interface{} `json:"-"`
+}
+
+// ChatMessage is used to identify a chat message
+type ChatMessage struct {
+	Date    time.Time `json:"date"`
+	User    string    `json:"user"`
+	Message string    `json:"message"`
 }
 
 // Location is used to identify the values of a restaurant

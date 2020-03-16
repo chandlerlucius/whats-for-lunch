@@ -21,8 +21,8 @@ func main() {
 	router.HandleFunc("/authenticate", authenticateHandler).Methods("POST")
 	router.HandleFunc("/login", loginHandler).Methods("POST")
 
-	subrouter := router.PathPrefix("/locations").Subrouter()
-	subrouter.HandleFunc("", locationsWebsocketHandler).Methods("GET")
+	subrouter := router.PathPrefix("/ws").Subrouter()
+	subrouter.HandleFunc("", websocketHandler).Methods("GET")
 
 	http.Handle("/", router)
 	http.ListenAndServe(":9000", router)
