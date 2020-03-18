@@ -95,8 +95,10 @@ func getDocuments(c *websocket.Conn, collectionName string) {
 
 	findOptions := options.Find()
 	if collectionName == "chat" {
-		findOptions.SetSort(bson.D{primitive.E{Key: "date", Value: 1}})
+		findOptions.SetLimit(100)
+		findOptions.SetSort(bson.D{primitive.E{Key: "date", Value: -1}})
 	} else if collectionName == "location" {
+		findOptions.SetLimit(5)
 		findOptions.SetSort(bson.D{primitive.E{Key: "votes", Value: -1}})
 	}
 
