@@ -6,8 +6,8 @@ class Suggestions extends React.Component {
     return (
       <div>
         {this.props.locations && this.props.locations.map((location, index) =>
-          <div key={index} className="flex">
-            <div className="votes-container">
+          <div key={index} className="votes-container">
+            <div>
               <h3>▲</h3>
               <h3>{location.votes}</h3>
               <h3>▼</h3>
