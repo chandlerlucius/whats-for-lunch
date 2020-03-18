@@ -9,7 +9,7 @@ class Chat extends React.Component {
   render() {
     return (
       <div key="messages">
-        {this.props.messages && this.props.messages.map((message, index) =>
+        {this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
           <div key={index}>
             <strong>
               {message.user}
