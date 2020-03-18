@@ -33,7 +33,7 @@ func checkPasswordHash(password string, hash string) bool {
 var key = []byte("the_most_secret_key")
 
 func authenticateHandler(w http.ResponseWriter, r *http.Request) {
-	status, err := authenticate(w, r)
+	status, username, err := authenticate(w, r)
 	if err != nil || status != http.StatusOK {
 		title := "Failure"
 		body := "Token is either invalid or session timed out. Please login again."
@@ -43,12 +43,12 @@ func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := "Success"
-	body := "User authentication succeeded!"
+	body := "User authentication succeeded. Welcome " + username + "!"
 	message := Message{status, title, body}
 	sendMessageAndLogError(w, message, err)
 }
 
-func authenticate(w http.ResponseWriter, r *http.Request) (int, error) {
+func authenticate(w http.ResponseWriter, r *http.Request) (int, string, error) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	token := r.URL.Query().Get("token")
 	if err != nil {
@@ -61,26 +61,24 @@ func authenticate(w http.ResponseWriter, r *http.Request) (int, error) {
 		return key, nil
 	})
 	if err != nil || !tkn.Valid {
-		return http.StatusUnauthorized, err
+		return http.StatusUnauthorized, "", err
 	}
-	return http.StatusOK, nil
+	return http.StatusOK, claims.Username, nil
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-	if username == "" || password == "" {
-		message := Message{http.StatusBadRequest, "Failure", "Username and Password must be filled out."}
+	if len(username) < 3 || len(password) < 3 {
+		message := Message{http.StatusBadRequest, "Failure", "Username and Password must longer than 3 characters."}
 		sendMessageAndLogError(w, message, nil)
 		return
 	}
 
 	user, err := getUserFromDatabase(username)
 	if err != nil {
-		status := http.StatusInternalServerError
-		sendMessageAndLogDefaultError(w, status, err)
-		return
+		log.Print(err)
 	}
 	if user.Username == "" {
 		hash := hashPassword(password)
@@ -99,7 +97,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	success := checkPasswordHash(password, user.Password)
 	if success == true {
-		expirationTime := time.Now().Add(1 * time.Minute)
+		expirationTime := time.Now().Add(10 * time.Minute)
 		claims := &Claims{
 			Username: user.Username,
 			StandardClaims: jwt.StandardClaims{
