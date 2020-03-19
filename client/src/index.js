@@ -9,7 +9,11 @@ import * as serviceWorker from './serviceWorker';
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
 
-document.addEventListener('DOMContentLoaded', function (event) {
+document.addEventListener('DOMContentLoaded', function() {
+  authenticate();
+});
+
+export const authenticate = function () {
   const href = window.location.href.replace('3000', '9000');
   const token = localStorage.getItem('token');
   if(token === null) {
@@ -21,10 +25,10 @@ document.addEventListener('DOMContentLoaded', function (event) {
   xhr.open('POST', href + 'authenticate?token=' + token);
   xhr.onload = function () {
     if (xhr.readyState === 4) {
+      const json = JSON.parse(xhr.responseText);
       if (xhr.status === 200) {
-        ReactDOM.render(<App />, document.querySelector('.root'));
+        ReactDOM.render(<App timeout={json.timeout}/>, document.querySelector('.root'));
       } else {
-        const json = JSON.parse(xhr.responseText);
         ReactDOM.render(<Login message={json.body}/>, document.querySelector('.root'));
       }
     }
@@ -36,4 +40,4 @@ document.addEventListener('DOMContentLoaded', function (event) {
     ReactDOM.render(<Login message="Error connecting to server. Try again later."/>, document.querySelector('.root'));
   }
   xhr.send();
-});
+}
