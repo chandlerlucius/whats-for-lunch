@@ -1,27 +1,31 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
-import {socketTimeout, authenticateInterval} from './App.js'
+import { clearTimeoutsAndIntervals } from './App.js'
 
 class Login extends React.Component {
   constructor(props) {
     super(props);
     localStorage.removeItem("token");
-    this.state = { message: props.message }
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.state = { message: props.message, color: props.color }
+    this.onSubmit = this.onSubmit.bind(this);
+    this.onReset = this.onReset.bind(this);
+    clearTimeoutsAndIntervals();
   }
 
   componentDidUpdate() {
-    clearTimeout(socketTimeout);
-    clearInterval(authenticateInterval);
+    clearTimeoutsAndIntervals();
   }
 
-  handleSubmit(event) {
+  onSubmit(event) {
     const react = this;
-    event.preventDefault();
     const form = event.target;
     const method = form.method;
     const action = form.action.replace('3000', '9000');
+    event.preventDefault();
+    react.setState({
+      message: '\u200b',
+    });
 
     const xhr = new XMLHttpRequest();
     xhr.open(method, action);
@@ -30,35 +34,35 @@ class Login extends React.Component {
         if (xhr.status === 200) {
           const json = JSON.parse(xhr.responseText);
           localStorage.setItem("token", json.token)
-          ReactDOM.render(<App timeout={json.timeout}/>, document.querySelector('.root'));
+          ReactDOM.render(<App timeout={json.timeout} />, document.querySelector('.root'));
         } else {
           const json = JSON.parse(xhr.responseText);
-          document.querySelectorAll(".message").forEach(function (element) {
-            react.setState({
-              message : json.body
-            });
+          react.setState({
+            message: json.body,
+            color: 'var(--failure-color)'
           });
         }
       }
     }
     xhr.onerror = function () {
       react.setState({
-        message : 'Error connecting to server. Try again later.'
+        message: 'Error connecting to server. Try again later.',
+        color: 'var(--failure-color)'
       });
     }
     xhr.send(new FormData(form));
   }
-  
-  color() {
-    if (this.state.message === 'Enter username and password to begin.') {
-      return 'var(--secondary-color)';
-    }
-    return 'var(--failure-color)';
+
+  onReset() {
+    this.setState({
+      message: 'Enter username and password to begin.',
+      color: 'var(--secondary-color)'
+    });
   }
 
   render() {
     return (
-      <form method="POST" action="/login" className="login-form" onSubmit={this.handleSubmit}>
+      <form method="POST" action="/login" className="login-form" onSubmit={this.onSubmit} onReset={this.onReset}>
         <h1>What's For Lunch?</h1>
         <div className="input-container">
           <input name="username" type="text" placeholder=" " required={true} minLength="3" autoFocus={true}></input>
@@ -70,7 +74,7 @@ class Login extends React.Component {
           <label htmlFor="password">Password</label>
           <span>Must have 3 or more characters</span>
         </div>
-        <span className="message" style={{ color: this.color() }}>{this.state.message}</span>
+        <span className="login-message" style={{ color: this.state.color }}>{this.state.message}</span>
         <hr />
         <button type="reset">Reset</button>
         <button type="submit">Login / Signup</button>
