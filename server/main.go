@@ -31,7 +31,7 @@ func main() {
 func sendMessageAndLogDefaultError(w http.ResponseWriter, status int, err error) {
 	title := "Failure"
 	body := "Sorry, we encountered an error our end. It has been logged and will be fixed!"
-	message := Message{status, title, body}
+	message := Message{status, title, body, "", 0}
 	sendMessageAndLogError(w, message, err)
 }
 
@@ -50,7 +50,9 @@ func sendMessage(w http.ResponseWriter, message Message) {
 
 // Message is used to send a title and body as error message to client
 type Message struct {
-	Status int    `json:"status"`
-	Title  string `json:"title"`
-	Body   string `json:"body"`
+	Status  int    `json:"status"`
+	Title   string `json:"title"`
+	Body    string `json:"body"`
+	Token   string `json:"token"`
+	Timeout int64  `json:"timeout"`
 }
