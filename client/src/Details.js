@@ -16,13 +16,11 @@ class Details extends React.Component {
           <a className="address" target="_blank" rel="noopener noreferrer" href={this.props.place.url}>{this.props.place.formatted_address}</a>
         </div>,
         <form key="detail-form" className="location-form" action="location">
-          <input type="hidden" name="place_id" value={this.props.place.place_id}></input>
           <input type="hidden" name="name" value={this.props.place.name}></input>
           <input type="hidden" name="rating" value={this.props.place.rating}></input>
           <input type="hidden" name="user_ratings_total" value={this.props.place.user_ratings_total}></input>
           <input type="hidden" name="price_level" value={this.props.place.price_level}></input>
           <input type="hidden" name="website" value={this.props.place.website}></input>
-          <input type="hidden" name="votes" value="1"></input>
           <button className="detail-button">Add to Lunch Suggestions!</button>
         </form>
     ]
