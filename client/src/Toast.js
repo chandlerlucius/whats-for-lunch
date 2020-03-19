@@ -1,7 +1,19 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 
 class Toast extends React.Component {
+
+	componentDidMount() {
+		setTimeout(this.clickToastX, 5000);
+	}
+
+	componentDidUpdate() {
+		setTimeout(this.clickToastX, 5000);
+	}
+
+	clickToastX() {
+		document.querySelector('.toast-close').click();
+	}
+
 	closeToast(event) {
 		event.target.parentNode.style.marginBottom = '';
 	}
