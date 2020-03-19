@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
+import {socketTimeout, authenticateInterval} from './App.js'
 
 class Login extends React.Component {
   constructor(props) {
@@ -8,6 +9,11 @@ class Login extends React.Component {
     localStorage.removeItem("token");
     this.state = { message: props.message }
     this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  componentDidUpdate() {
+    clearTimeout(socketTimeout);
+    clearInterval(authenticateInterval);
   }
 
   handleSubmit(event) {
@@ -24,7 +30,7 @@ class Login extends React.Component {
         if (xhr.status === 200) {
           const json = JSON.parse(xhr.responseText);
           localStorage.setItem("token", json.token)
-          ReactDOM.render(<App />, document.querySelector('.root'));
+          ReactDOM.render(<App timeout={json.timeout}/>, document.querySelector('.root'));
         } else {
           const json = JSON.parse(xhr.responseText);
           document.querySelectorAll(".message").forEach(function (element) {
