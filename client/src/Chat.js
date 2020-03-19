@@ -6,6 +6,12 @@ class Chat extends React.Component {
     ReactDOM.findDOMNode(this).parentNode.scrollTop = ReactDOM.findDOMNode(this).parentNode.scrollHeight;
   }
 
+  componentDidUpdate() {
+    const audio = new Audio('aimrcv.wav');
+    audio.play();
+    ReactDOM.findDOMNode(this).parentNode.scrollTop = ReactDOM.findDOMNode(this).parentNode.scrollHeight;
+  }
+
   render() {
     return (
       <div key="messages">
