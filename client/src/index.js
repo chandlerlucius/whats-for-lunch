@@ -13,11 +13,11 @@ document.addEventListener('DOMContentLoaded', function() {
   authenticate();
 });
 
-export const authenticate = function () {
+const authenticate = function () {
   const href = window.location.href.replace('3000', '9000');
   const token = localStorage.getItem('token');
   if(token === null) {
-    ReactDOM.render(<Login message='Enter username and password to begin.'/>, document.querySelector('.root'));
+    ReactDOM.render(<Login message='Enter username and password to begin.' color='var(--secondary-color)'/>, document.querySelector('.root'));
   }
 
   const xhr = new XMLHttpRequest();
@@ -29,15 +29,15 @@ export const authenticate = function () {
       if (xhr.status === 200) {
         ReactDOM.render(<App timeout={json.timeout}/>, document.querySelector('.root'));
       } else {
-        ReactDOM.render(<Login message={json.body}/>, document.querySelector('.root'));
+        ReactDOM.render(<Login message={json.body} color='var(--failure-color)'/>, document.querySelector('.root'));
       }
     }
   }
   xhr.onerror = function () {
-    ReactDOM.render(<Login message="Error connecting to server. Try again later."/>, document.querySelector('.root'));
+    ReactDOM.render(<Login message="Error connecting to server. Try again later." color='var(--failure-color)'/>, document.querySelector('.root'));
   }
   xhr.ontimeout = function () {
-    ReactDOM.render(<Login message="Error connecting to server. Try again later."/>, document.querySelector('.root'));
+    ReactDOM.render(<Login message="Error connecting to server. Try again later." color='var(--failure-color)'/>, document.querySelector('.root'));
   }
   xhr.send();
 }
