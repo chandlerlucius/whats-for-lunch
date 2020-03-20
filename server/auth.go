@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,39 +32,57 @@ func checkPasswordHash(password string, hash string) bool {
 }
 
 var key = []byte("the_most_secret_key")
+var expirationTime = 1 * time.Minute
 
 func authenticateHandler(w http.ResponseWriter, r *http.Request) {
-	status, username, err := authenticate(w, r)
+	status, claims, token, err := authenticateRequest(w, r)
 	if err != nil || status != http.StatusOK {
 		title := "Failure"
-		body := "Token is either invalid or session timed out. Please login again."
-		message := Message{status, title, body}
+		body := "Token invalid or session expired. Please login again."
+		message := Message{status, title, body, token, 0}
 		sendMessageAndLogError(w, message, err)
 		return
 	}
 
 	title := "Success"
-	body := "User authentication succeeded. Welcome " + username + "!"
-	message := Message{status, title, body}
-	sendMessageAndLogError(w, message, err)
+	body := "User authentication succeeded. Welcome " + claims.User.Username + "!"
+	message := Message{status, title, body, token, (claims.ExpiresAt - time.Now().Unix()) * 1000}
+	sendMessage(w, message)
 }
 
-func authenticate(w http.ResponseWriter, r *http.Request) (int, string, error) {
+func authenticateRequest(w http.ResponseWriter, r *http.Request) (int, *Claims, string, error) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	token := r.URL.Query().Get("token")
-	if err != nil {
-		log.Print(err)
-	}
-	tknStr := token
+	return authenticate(token)
+}
 
+func authenticateWebsocket(c *websocket.Conn, token string) (bool, string, *Claims) {
+	status, claims, token, err1 := authenticate(token)
+	if err1 != nil || status != http.StatusOK || claims == (&Claims{}) {
+		log.Print(err1)
+		message := websocket.FormatCloseMessage(4001, "Session expired. Please log in again.")
+		c.WriteMessage(websocket.CloseMessage, message)
+		return false, "", &Claims{}
+	}
+	return true, token, claims
+}
+
+func authenticate(token string) (int, *Claims, string, error) {
 	claims := &Claims{}
-	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
+	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	})
 	if err != nil || !tkn.Valid {
-		return http.StatusUnauthorized, "", err
+		return http.StatusUnauthorized, &Claims{}, "", err
 	}
-	return http.StatusOK, claims.Username, nil
+
+	claims.ExpiresAt = time.Now().Add(expirationTime).Unix()
+	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err1 := newToken.SignedString(key)
+	if err1 != nil {
+		return http.StatusUnauthorized, &Claims{}, "", err1
+	}
+	return http.StatusOK, claims, tokenString, nil
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,18 +90,18 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 	if len(username) < 3 || len(password) < 3 {
-		message := Message{http.StatusBadRequest, "Failure", "Username and Password must longer than 3 characters."}
+		message := Message{http.StatusBadRequest, "Failure", "Username and Password must longer than 3 characters.", "", 0}
 		sendMessageAndLogError(w, message, nil)
 		return
 	}
 
-	user, err := getUserFromDatabase(username)
+	user, err := findUserDocumentByUsername(username)
 	if err != nil {
 		log.Print(err)
 	}
-	if user.Username == "" {
+	if user.ID == primitive.NilObjectID {
 		hash := hashPassword(password)
-		user = User{username, hash}
+		user = User{primitive.NewObjectID(), username, hash}
 		res, err := insertUserIntoDatabase(&user, "user")
 		if err != nil {
 			status := http.StatusInternalServerError
@@ -90,6 +109,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if res != nil {
+			user.ID = res.InsertedID.(primitive.ObjectID)
 			info := "Added to DB succesffully with name: " + user.Username + " | id:" + res.InsertedID.(primitive.ObjectID).String()
 			log.Print(info)
 		}
@@ -97,11 +117,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	success := checkPasswordHash(password, user.Password)
 	if success == true {
-		expirationTime := time.Now().Add(10 * time.Minute)
 		claims := &Claims{
-			Username: user.Username,
+			User: user,
 			StandardClaims: jwt.StandardClaims{
-				ExpiresAt: expirationTime.Unix(),
+				ExpiresAt: time.Now().Add(expirationTime).Unix(),
 			},
 		}
 
@@ -112,14 +131,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		jsonToken := map[string]string{"token": tokenString}
-		err1 := json.NewEncoder(w).Encode(jsonToken)
+		jsonData := map[string]interface{}{"token": tokenString, "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000}
+		err1 := json.NewEncoder(w).Encode(jsonData)
 		if err1 != nil {
 			log.Print(err1)
 		}
 	} else {
-		message := Message{http.StatusUnauthorized, "Failure", "Username or Password is incorrect."}
-		sendMessageAndLogError(w, message, nil)
+		message := Message{http.StatusUnauthorized, "Failure", "Username or Password is incorrect.", "", 0}
+		sendMessage(w, message)
 		return
 	}
 }
@@ -133,24 +152,35 @@ func insertUserIntoDatabase(user *User, collection string) (*mongo.InsertOneResu
 	return res, err
 }
 
-func getUserFromDatabase(username string) (User, error) {
+func findUserDocumentByUsername(username string) (User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var res User
+	var user User
 	collection := mongoClient.Database(database).Collection("user")
-	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&res)
-	return res, err
+	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
+	return user, err
+}
+
+func findUserDocumentByID(id primitive.ObjectID) (User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var user User
+	collection := mongoClient.Database(database).Collection("user")
+	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	return user, err
 }
 
 // User is a simple user auth object
 type User struct {
+	ID       primitive.ObjectID `bson:"_id, omitempty"`
 	Username string
 	Password string
 }
 
 // Claims is a jwt claims object
 type Claims struct {
-	Username string `json:"username"`
+	User User
 	jwt.StandardClaims
 }
