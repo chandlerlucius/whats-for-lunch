@@ -32,7 +32,7 @@ func checkPasswordHash(password string, hash string) bool {
 }
 
 var key = []byte("the_most_secret_key")
-var expirationTime = 1 * time.Minute
+var expirationTime = 5 * time.Minute
 
 func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	status, claims, token, err := authenticateRequest(w, r)
