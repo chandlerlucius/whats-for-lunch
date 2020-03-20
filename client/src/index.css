@@ -151,7 +151,7 @@ a:hover {
   position: fixed;
   text-align: center;
   align-items: center;
-  margin-bottom: -100%;
+  margin-bottom: -10%;
   transition: all 0.5s;
   color: var(--failure-color);
   background: var(--secondary-color);
