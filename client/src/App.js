@@ -152,14 +152,18 @@ class App extends React.Component {
 export const convertFormSubmitToJsonSubmit = function (form) {
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    const map = {};
-    const formData = new FormData(form);
-    formData.forEach(function (value, key) {
-      map[key] = value;
-    });
-    map['type'] = form.action.split('/').pop();
-    sendWebsocketMessage(map);
+    submitFormAsJson(form);
   });
+}
+
+export const submitFormAsJson = function (form) {
+  const map = {};
+  const formData = new FormData(form);
+  formData.forEach(function (value, key) {
+    map[key] = value;
+  });
+  map['type'] = form.action.split('/').pop();
+  sendWebsocketMessage(map);
 }
 
 export const sendWebsocketMessage = function (map) {
