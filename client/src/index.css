@@ -144,12 +144,14 @@ a:hover {
 
 .toast-container {
   bottom: 0;
+  z-index: 1;
   opacity: 0.9;
   display: flex;
   padding: 10px;
   position: fixed;
+  text-align: center;
   align-items: center;
-  margin-bottom: -45px;
+  margin-bottom: -100%;
   transition: all 0.5s;
   color: var(--failure-color);
   background: var(--secondary-color);
@@ -310,18 +312,18 @@ a:hover {
   overflow: auto;
 }
 
-.votes-form {
+.vote-form {
   width: 50%;
   margin: auto;
   display: flex;
   justify-content: center;
 }
 
-.votes-form>div {
+.vote-form>div {
   margin: 5px;
 }
 
-.votes-form h3 {
+.vote-form h3 {
   cursor: pointer;
   text-align: center;
 }
