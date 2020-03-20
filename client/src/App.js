@@ -4,12 +4,12 @@ import './index.css';
 import Map from './Map';
 import Chat from './Chat';
 import Toast from './Toast'
+import Login from './Login'
 import Search from './Search';
 import Suggestions from './Suggestions';
 
 let url;
 let socket;
-let socketTimeout;
 let host = window.location.host;
 host = host.replace('3000', '9000');
 if (window.location.protocol === 'https:') {
@@ -18,10 +18,23 @@ if (window.location.protocol === 'https:') {
   url = `ws://${host}/ws`;
 }
 
+let socketTimeout;
+let authenticateInterval;
 class App extends React.Component {
   componentDidMount() {
-    ReactDOM.render(<Search />, document.querySelector('.search-container'));
+    const authenticateWebsocket = function () {
+      const map = { 'type': 'authenticate' };
+      sendWebsocketMessage(map);
+    }
 
+    const resetAuthTimeout = function (timeout) {
+      clearInterval(authenticateInterval);
+      authenticateInterval = setInterval(authenticateWebsocket, timeout);
+    }
+
+    resetAuthTimeout(this.props.timeout);
+
+    ReactDOM.render(<Search />, document.querySelector('.search-container'));
     ReactDOM.render(<Map />, document.querySelector('.map-container'));
 
     const clearSocketTimeout = function () {
@@ -46,7 +59,11 @@ class App extends React.Component {
         };
 
         socket.onclose = function (event) {
-          setSocketTimeout();
+          if (event.code === 4001) {
+            ReactDOM.render(<Login message={event.reason} color='var(--failure-color)' />, document.querySelector('.root'));
+          } else {
+            setSocketTimeout();
+          }
         };
 
         socket.onerror = function () {
@@ -55,7 +72,17 @@ class App extends React.Component {
 
         socket.onmessage = function (event) {
           const json = JSON.parse(event.data);
-          if (json.type === 'error') {
+          if (json.token) {
+            localStorage.setItem("token", json.token)
+          }
+          if (json.timeout) {
+            resetAuthTimeout(json.timeout);
+          }
+          if (json.type === 'success') {
+            if (json.body === 'chat') {
+              document.querySelector('.chat-textarea').value = '';
+            }
+          } else if (json.type === 'error') {
             ReactDOM.render(<Toast message={json.body} />, document.querySelector('.toast-container'));
             document.querySelector('.toast-container').style.marginBottom = '0';
           } else if (json.type === 'chat') {
@@ -100,11 +127,11 @@ class App extends React.Component {
         <h2>What's For Lunch?</h2>
         <h2 className="toggle" onClick={this.toggleRightMenu}>☰</h2>
       </nav>,
-      <div key="left" className="left">
+      <div key="left" className="left left-menu-open">
         {/* <h2 className="close toggle" onClick={this.toggleLeftMenu}>✕</h2> */}
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
-          <textarea name="message" className="chat"></textarea>
+          <textarea name="message" className="chat-textarea"></textarea>
           <button type="submit">Send</button>
         </form>
       </div>,
@@ -113,7 +140,7 @@ class App extends React.Component {
         <div className="search-container"></div>
         <div className="map-container"></div>
       </div>,
-      <div key="right" className="right">
+      <div key="right" className="right right-menu-open">
         <h2 className="close toggle" onClick={this.toggleRightMenu}>✕</h2>
         <div className="details-container"></div>
       </div>,
@@ -125,15 +152,24 @@ class App extends React.Component {
 export const convertFormSubmitToJsonSubmit = function (form) {
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    const object = {};
+    const map = {};
     const formData = new FormData(form);
     formData.forEach(function (value, key) {
-      object[key] = value;
+      map[key] = value;
     });
-    object['type'] = form.action.split('/').pop();
-    const json = JSON.stringify(object);
-    socket.send(json);
+    map['type'] = form.action.split('/').pop();
+    sendWebsocketMessage(map);
   });
+}
+
+export const sendWebsocketMessage = function (map) {
+  const json = JSON.stringify(map);
+  socket.send(json);
+}
+
+export const clearTimeoutsAndIntervals = function () {
+  clearTimeout(socketTimeout);
+  clearInterval(authenticateInterval);
 }
 
 export default App;
