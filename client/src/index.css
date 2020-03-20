@@ -310,18 +310,18 @@ a:hover {
   overflow: auto;
 }
 
-.votes-container {
+.votes-form {
   width: 50%;
   margin: auto;
   display: flex;
   justify-content: center;
 }
 
-.votes-container>div {
+.votes-form>div {
   margin: 5px;
 }
 
-.votes-container h3 {
+.votes-form h3 {
   cursor: pointer;
   text-align: center;
 }
