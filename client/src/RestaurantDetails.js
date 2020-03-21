@@ -38,7 +38,7 @@ class RestaurantDetails extends React.Component {
       <div key="website-container" className="detail-item">
         <img className="detail-icon" alt="Website" src="https://www.gstatic.com/images/icons/material/system_gm/2x/public_gm_blue_24dp.png" />
         <a className="website" target="_blank" rel="noopener noreferrer" href={this.props.place.website}>{url}</a>
-      </div>,
+      </div>
     ]
   }
 }
