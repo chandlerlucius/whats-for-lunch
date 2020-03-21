@@ -144,7 +144,7 @@ class App extends React.Component {
         <h2 className="close toggle" onClick={this.toggleRightMenu}>✕</h2>
         <div className="details-container"></div>
       </div>,
-      <div className="toast-container"></div>
+      <div key="toast" className="toast-container"></div>
     ]
   }
 }
@@ -174,6 +174,10 @@ export const sendWebsocketMessage = function (map) {
 export const clearTimeoutsAndIntervals = function () {
   clearTimeout(socketTimeout);
   clearInterval(authenticateInterval);
+}
+
+export const formatDate = function(date) {
+  return new Date(date).toLocaleDateString() + " " + new Date(date).getHours() + ":" + ("0" + new Date(date).getMinutes()).slice(-2);
 }
 
 export default App;
