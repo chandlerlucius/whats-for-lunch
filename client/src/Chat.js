@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { formatDate } from './App';
 
 class Chat extends React.Component {
   componentDidMount() {
@@ -14,14 +15,14 @@ class Chat extends React.Component {
 
   render() {
     return (
-      <div key="messages">
+      <div>
         {this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
           <div key={index}>
             <strong>
               {message.user}
             </strong>
             <i className="chat-date">
-              {new Date(message.date).toLocaleDateString() + " " + new Date(message.date).getHours() + ":" + ("0" + new Date(message.date).getMinutes()).slice(-2)}
+              {formatDate(message.date)}
             </i>
             <div className="chat-message">
               {message.message}
