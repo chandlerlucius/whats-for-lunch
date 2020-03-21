@@ -167,8 +167,12 @@ export const submitFormAsJson = function (form) {
 }
 
 export const sendWebsocketMessage = function (map) {
-  const json = JSON.stringify(map);
-  socket.send(json);
+  try {
+    const json = JSON.stringify(map);
+    socket.send(json);
+  } catch(error) {
+    socket.close(4001, "Error connecting to server. Try again later.");
+  }
 }
 
 export const clearTimeoutsAndIntervals = function () {
