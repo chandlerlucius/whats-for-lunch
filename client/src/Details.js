@@ -8,8 +8,12 @@ class Details extends React.Component {
   }
 
   render() {
+    let photo = this.props.photo;
+    if(this.props.place.photos) {
+      photo = this.props.place.photos[0].getUrl();
+    }
     return [
-      <img key="detail-photo" className="photo" alt="Restaurant" src={this.props.place.photos[0].getUrl()} />,
+      <img key="detail-photo" className="photo" alt="Restaurant" src={photo} />,
       <h2 key="detail-name">{this.props.place.name}</h2>,
       <RestaurantDetails place={this.props.place} />,
       <div key="detail-address" className="detail-item">
@@ -21,7 +25,10 @@ class Details extends React.Component {
         <input type="hidden" name="rating" value={this.props.place.rating}></input>
         <input type="hidden" name="user_ratings_total" value={this.props.place.user_ratings_total}></input>
         <input type="hidden" name="price_level" value={this.props.place.price_level}></input>
+        <input type="hidden" name="url" value={this.props.place.url}></input>
         <input type="hidden" name="website" value={this.props.place.website}></input>
+        <input type="hidden" name="formatted_address" value={this.props.place.formatted_address}></input>
+        <input type="hidden" name="photo" value={photo}></input>
         <button className="detail-button">Add to Lunch Suggestions!</button>
       </form>
     ]
