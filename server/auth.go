@@ -72,7 +72,9 @@ func authenticate(token string) (int, *Claims, string, error) {
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	})
-	if err != nil || !tkn.Valid {
+	
+	user, err1 := findUserDocumentByID(claims.User.ID)
+	if err != nil || err1 != nil || !tkn.Valid || user == (User{}) {
 		return http.StatusUnauthorized, &Claims{}, "", err
 	}
 
