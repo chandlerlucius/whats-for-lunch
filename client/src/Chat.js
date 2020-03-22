@@ -15,9 +15,14 @@ class Chat extends React.Component {
 
   render() {
     return (
-      <div>
-        {this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
-          <div key={index}>
+      this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
+        <div key={index} className="chat-inner-container">
+          <div className="chat-icon-container">
+            <h3 className="chat-icon">
+              {message.user.toUpperCase().charAt(0)}
+            </h3>
+          </div>
+          <div>
             <strong>
               {message.user}
             </strong>
@@ -28,8 +33,8 @@ class Chat extends React.Component {
               {message.message}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )
     )
   }
 }
