@@ -153,7 +153,6 @@ a:hover {
   align-items: center;
   margin-bottom: -10%;
   transition: all 0.5s;
-  color: var(--failure-color);
   background: var(--secondary-color);
 }
 
@@ -247,6 +246,26 @@ a:hover {
   font-size: .85em;
 }
 
+.chat-inner-container {
+  display: flex;
+}
+
+.chat-icon-container {
+  float: left;
+  margin: 5px 10px 0 0;
+}
+
+.chat-icon {
+  width: 30px;
+  height: 30px;
+  color: #FFFFFF;
+  background: var(--secondary-color);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  border-radius: 3px;
+}
+
 .chat-message {
   padding-bottom: 10px;
 }
@@ -307,7 +326,6 @@ a:hover {
 
 .center {
   width: 50%;
-  padding: 10px;
   margin-top: 50px;
   overflow: auto;
 }
@@ -316,14 +334,25 @@ a:hover {
   width: 50%;
   margin: auto;
   display: flex;
+  align-items: center;
+}
+
+.vote-container {
+  display: flex;
+  align-items: center;
   justify-content: center;
+  width: 30px;
+  border: 1px solid;
+  border-radius: 5px;
 }
 
 .vote-form>div {
+  display: flex;
   margin: 5px;
+  align-items: center;
 }
 
-.vote-form h3 {
+.vote-form>div>h2 {
+  margin: 5px;
   cursor: pointer;
-  text-align: center;
 }
