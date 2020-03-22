@@ -331,10 +331,7 @@ a:hover {
 }
 
 .vote-form {
-  width: 50%;
-  margin: auto;
   display: flex;
-  align-items: center;
 }
 
 .vote-container {
@@ -346,7 +343,12 @@ a:hover {
   border-radius: 5px;
 }
 
+.vote-form>div:first-child {
+  justify-content: flex-end;
+}
+
 .vote-form>div {
+  width: 50%;
   display: flex;
   margin: 5px;
   align-items: center;
@@ -355,4 +357,9 @@ a:hover {
 .vote-form>div>h2 {
   margin: 5px;
   cursor: pointer;
+  -webkit-text-stroke: 1px #000000;
+}
+
+.vote-checkmark {
+  color: var(--success-color);
 }
