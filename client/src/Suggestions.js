@@ -1,37 +1,56 @@
 import React from 'react'
-import RestaurantDetails from './RestaurantDetails'
-import { sendWebsocketMessage } from './App'
+import { submitFormAsJson, formatDate } from './App'
 
 class Suggestions extends React.Component {
 
   handleVote(event) {
-    const map = {};
-    if (event.target.innerHTML === '▲') {
-      map['vote'] = 'up';
-    } else if (event.target.innerHTML === '▼') {
-      map['vote'] = 'down';
+    const value = event.target;
+    const form = event.target.closest('form');
+    const input = form.querySelector('[name="value"]');
+    input.value = value.getAttribute('value');
+    submitFormAsJson(form);
+  }
+
+  getTitle(location) {
+    let title = "";
+    location.up_votes.forEach(function (vote) {
+      title += '▲ ' + vote.user + ' ' + formatDate(vote.date) + '\n';
+    });
+    location.down_votes.forEach(function (vote) {
+      title += '▼ ' + vote.user + ' ' + formatDate(vote.date) + '\n';
+    });
+    return title;
+  }
+
+  getStyle(location, value) {
+    let style = {};
+    if (location.voted === 1 && value === 1) {
+      style = { color: 'var(--success-color)' };
     }
-    map['type'] = 'votes';
-    sendWebsocketMessage(map);
+    if (location.voted === -1 && value === -1) {
+      style = { color: 'var(--failure-color)' };
+    }
+    return style;
   }
 
   render() {
     return (
-      <div>
-        {this.props.locations && this.props.locations.map((location, index) =>
-          <div key={index} className="votes-container">
-            <div>
-              <h3 onClick={this.handleVote}>▲</h3>
-              <h3>{location.votes}</h3>
-              <h3 onClick={this.handleVote}>▼</h3>
+      this.props.locations && this.props.locations.map((location, index) =>
+        <form key={index} action="vote" className="vote-form">
+          <div>
+            <h2 title="Click to add or remove up vote" onClick={this.handleVote} value="1" style={this.getStyle(location, 1)}>▲</h2>
+            <div className="vote-container">
+              <h3 title={this.getTitle(location)}>{location.vote_count}</h3>
             </div>
-            <div>
-              <h3>{location.name}</h3>
-              <RestaurantDetails place={location} />
-            </div>
+            <h2 title="Click to add or remove down vote" onClick={this.handleVote} value="-1" style={this.getStyle(location, -1)}>▼</h2>
           </div>
-        )}
-      </div>
+          <div>
+            <h3>{location.name}</h3>
+          </div>
+          <input type="hidden" name="location" value={location.name}></input>
+          <input type="hidden" name="value"></input>
+        </form>
+      )
     )
   }
 }
