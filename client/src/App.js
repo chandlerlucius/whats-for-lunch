@@ -22,21 +22,9 @@ let socketTimeout;
 let authenticateInterval;
 class App extends React.Component {
   componentDidMount() {
-    const authenticateWebsocket = function () {
-      const map = { 'type': 'authenticate' };
-      sendWebsocketMessage(map);
-    }
-
-    const resetAuthTimeout = function (timeout) {
-      clearInterval(authenticateInterval);
-      authenticateInterval = setInterval(authenticateWebsocket, timeout);
-    }
-
-    resetAuthTimeout(this.props.timeout);
-
     ReactDOM.render(<Search />, document.querySelector('.search-container'));
     ReactDOM.render(<Map />, document.querySelector('.map-container'));
-
+    
     const clearSocketTimeout = function () {
       if (socketTimeout) {
         clearTimeout(socketTimeout);
@@ -63,6 +51,7 @@ class App extends React.Component {
             ReactDOM.render(<Login message={event.reason} color='var(--failure-color)' />, document.querySelector('.root'));
           } else {
             setSocketTimeout();
+            // window.location.reload();
           }
         };
 
@@ -78,13 +67,13 @@ class App extends React.Component {
           if (json.timeout) {
             resetAuthTimeout(json.timeout);
           }
-          if (json.type === 'success') {
-            if (json.body === 'chat') {
+          if (json.status === 200) {
+            if (json.title === 'chat') {
               document.querySelector('.chat-textarea').value = '';
             }
-          } else if (json.type === 'error') {
-            ReactDOM.render(<Toast message={json.body} />, document.querySelector('.toast-container'));
-            document.querySelector('.toast-container').style.marginBottom = '0';
+            ReactDOM.render(<Toast message={json.body} color={'var(--success-color)'} />, document.querySelector('.toast-container'));
+          } else if (json.status !== undefined) {
+            ReactDOM.render(<Toast message={json.body} color={'var(--failure-color)'} />, document.querySelector('.toast-container'));
           } else if (json.type === 'chat') {
             ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
           } else if (json.type === 'location') {
@@ -121,6 +110,7 @@ class App extends React.Component {
   }
 
   render() {
+    resetAuthTimeout(this.props.timeout);
     return [
       <nav key="nav">
         <h2 className="toggle" onClick={this.toggleLeftMenu}>💬</h2>
@@ -149,6 +139,16 @@ class App extends React.Component {
   }
 }
 
+const resetAuthTimeout = function (timeout) {
+  clearInterval(authenticateInterval);
+  authenticateInterval = setInterval(authenticateWebsocket, timeout);
+}
+
+const authenticateWebsocket = function () {
+  const map = { 'type': 'authenticate' };
+  sendWebsocketMessage(map);
+}
+
 export const convertFormSubmitToJsonSubmit = function (form) {
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -170,7 +170,7 @@ export const sendWebsocketMessage = function (map) {
   try {
     const json = JSON.stringify(map);
     socket.send(json);
-  } catch(error) {
+  } catch (error) {
     socket.close(4001, "Error connecting to server. Try again later.");
   }
 }
@@ -180,7 +180,7 @@ export const clearTimeoutsAndIntervals = function () {
   clearInterval(authenticateInterval);
 }
 
-export const formatDate = function(date) {
+export const formatDate = function (date) {
   return new Date(date).toLocaleDateString() + " " + new Date(date).getHours() + ":" + ("0" + new Date(date).getMinutes()).slice(-2);
 }
 
