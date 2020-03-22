@@ -1,14 +1,9 @@
 import React from 'react'
 
+
+let toastCloseTimeout;
+
 class Toast extends React.Component {
-
-	componentDidMount() {
-		setTimeout(this.clickToastX, 5000);
-	}
-
-	componentDidUpdate() {
-		setTimeout(this.clickToastX, 5000);
-	}
 
 	clickToastX() {
 		document.querySelector('.toast-close').click();
@@ -19,8 +14,11 @@ class Toast extends React.Component {
 	}
 
 	render() {
+		clearTimeout(toastCloseTimeout);
+		document.querySelector('.toast-container').style.marginBottom = '0';
+		toastCloseTimeout = setTimeout(this.clickToastX, 5000);
 		return [
-			<h3 key="toast-message">{this.props.message}</h3>,
+			<h3 key="toast-message" style={{color: this.props.color}}>{this.props.message}</h3>,
 			<h3 key="toast-close" className="toast-close" onClick={this.closeToast}>✕</h3>
 		]
 	}
