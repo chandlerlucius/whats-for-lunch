@@ -24,7 +24,7 @@ class App extends React.Component {
   componentDidMount() {
     ReactDOM.render(<Search />, document.querySelector('.search-container'));
     ReactDOM.render(<Map />, document.querySelector('.map-container'));
-    
+
     const clearSocketTimeout = function () {
       if (socketTimeout) {
         clearTimeout(socketTimeout);
@@ -39,49 +39,49 @@ class App extends React.Component {
     }
 
     const start = function () {
-      try {
-        const token = localStorage.getItem('token');
-        socket = new WebSocket(url + '?token=' + token);
-        socket.onopen = function () {
-          clearSocketTimeout();
-        };
+      const token = localStorage.getItem('token');
+      socket = new WebSocket(url + '?token=' + token);
+      socket.onopen = function () {
+        clearSocketTimeout();
+      };
 
-        socket.onclose = function (event) {
-          if (event.code === 4001) {
-            ReactDOM.render(<Login message={event.reason} color='var(--failure-color)' />, document.querySelector('.root'));
-          } else {
-            setSocketTimeout();
-            // window.location.reload();
-          }
-        };
-
-        socket.onerror = function () {
-          socket.close();
-        };
-
-        socket.onmessage = function (event) {
-          const json = JSON.parse(event.data);
-          if (json.token) {
-            localStorage.setItem("token", json.token)
-          }
-          if (json.timeout) {
-            resetAuthTimeout(json.timeout);
-          }
-          if (json.status === 200) {
-            if (json.title === 'chat') {
-              document.querySelector('.chat-textarea').value = '';
-            }
-            ReactDOM.render(<Toast message={json.body} color={'var(--success-color)'} />, document.querySelector('.toast-container'));
-          } else if (json.status !== undefined) {
-            ReactDOM.render(<Toast message={json.body} color={'var(--failure-color)'} />, document.querySelector('.toast-container'));
-          } else if (json.type === 'chat') {
-            ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
-          } else if (json.type === 'location') {
-            ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
-          }
+      socket.onclose = function (event) {
+        if (event.code === 4001) {
+          ReactDOM.render(<Login message={event.reason} color="var(--failure-color)" />, document.querySelector('.root'));
+        } else {
+          setSocketTimeout();
+          // window.location.reload();
         }
-      } catch (error) {
-        //Ignore error on purpose
+      };
+
+      socket.onerror = function () {
+        const message = "Socket closed. Attempting reconnect in 5 seconds.";
+        renderToast(message, "var(--failure-color)")
+        setTimeout(function () { renderToast(message + ".", "var(--failure-color)") }, 1000)
+        setTimeout(function () { renderToast(message + "..", "var(--failure-color)") }, 2000)
+        socket.close();
+      };
+
+      socket.onmessage = function (event) {
+        const json = JSON.parse(event.data);
+        if (json.token) {
+          localStorage.setItem("token", json.token)
+        }
+        if (json.timeout) {
+          resetAuthTimeout(json.timeout);
+        }
+        if (json.status === 200) {
+          if (json.title === 'chat') {
+            document.querySelector('.chat-textarea').value = '';
+          }
+          ReactDOM.render(<Toast message={json.body} color={'var(--success-color)'} />, document.querySelector('.toast-container'));
+        } else if (json.status !== undefined) {
+          ReactDOM.render(<Toast message={json.body} color={'var(--failure-color)'} />, document.querySelector('.toast-container'));
+        } else if (json.type === 'chat') {
+          ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
+        } else if (json.type === 'location') {
+          ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
+        }
       }
     };
     start();
@@ -182,6 +182,10 @@ export const clearTimeoutsAndIntervals = function () {
 
 export const formatDate = function (date) {
   return new Date(date).toLocaleDateString() + " " + new Date(date).getHours() + ":" + ("0" + new Date(date).getMinutes()).slice(-2);
+}
+
+export const renderToast = function (message, color) {
+  ReactDOM.render(<Toast message={message} color={color} />, document.querySelector('.toast-container'));
 }
 
 export default App;
