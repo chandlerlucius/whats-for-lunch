@@ -357,7 +357,6 @@ a:hover {
 .vote-form>div>h2 {
   margin: 5px;
   cursor: pointer;
-  -webkit-text-stroke: 1px #000000;
 }
 
 .vote-checkmark {
