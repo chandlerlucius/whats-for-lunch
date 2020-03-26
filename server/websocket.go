@@ -15,7 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var clients = make(map[*websocket.Conn]string)
+var clientTokens = make(map[*websocket.Conn]string)
+var clientUserIDs = make(map[primitive.ObjectID]time.Time)
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -36,8 +37,9 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !authenticated {
 		return
 	}
+	clientTokens[c] = token
+	clientUserIDs[claims.User.ID] = time.Now()
 
-	clients[c] = token
 	writeDocumentsToClient(c, "location", claims)
 	writeDocumentsToClient(c, "chat", claims)
 	handleConnection(c)
@@ -45,7 +47,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 func handleConnection(c *websocket.Conn) {
 	defer func() {
-		delete(clients, c)
+		delete(clientTokens, c)
 		c.Close()
 	}()
 	for {
@@ -56,11 +58,12 @@ func handleConnection(c *websocket.Conn) {
 			}
 			break
 		}
-		authenticated, token, claims := authenticateWebsocket(c, clients[c])
+		authenticated, token, claims := authenticateWebsocket(c, clientTokens[c])
 		if !authenticated {
 			return
 		}
-		clients[c] = token
+		clientTokens[c] = token
+		clientUserIDs[claims.User.ID] = time.Now()
 
 		websocketMessage := &WebsocketMessage{}
 		err2 := json.Unmarshal(bytes, websocketMessage)
@@ -90,16 +93,16 @@ func handleConnection(c *websocket.Conn) {
 			continue
 		}
 
-		for client := range clients {
+		for client := range clientTokens {
 			if err != nil {
 				log.Printf("error: %v", err)
 			}
 
-			authenticated, token, claims := authenticateWebsocket(c, clients[client])
+			authenticated, token, claims := authenticateWebsocket(c, clientTokens[client])
 			if !authenticated {
 				continue
 			}
-			clients[client] = token
+			clientTokens[client] = token
 
 			if websocketMessage.Type == "chat" {
 				writeDocumentsToClient(client, "chat", claims)
@@ -123,7 +126,7 @@ func writeDocumentsToClient(c *websocket.Conn, collectionName string, claims *Cl
 		if err1 != nil {
 			log.Print(err1)
 		}
-		result = replaceUserIDWithUserName(result)
+		result = replaceUserIDWithUserDetails(result)
 		if result["up_votes"] != nil {
 			result = fixVoteJSON(result, "up_votes", claims)
 		}
@@ -132,7 +135,7 @@ func writeDocumentsToClient(c *websocket.Conn, collectionName string, claims *Cl
 		}
 		results = append(results, &result)
 	}
-	var body bson.M = bson.M{"type": collectionName, "token": clients[c], "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
+	var body bson.M = bson.M{"type": collectionName, "token": clientTokens[c], "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
 
 	err2 := c.WriteJSON(body)
 	if err2 != nil {
@@ -152,20 +155,37 @@ func fixVoteJSON(result bson.M, voteType string, claims *Claims) bson.M {
 				result["voted"] = -1
 			}
 		}
-		vote = replaceUserIDWithUserName(vote)
+		vote = replaceUserIDWithUserDetails(vote)
 		votes = append(votes, vote)
 	}
 	result[voteType] = votes
 	return result
 }
 
-func replaceUserIDWithUserName(result bson.M) bson.M {
+func replaceUserIDWithUserDetails(result bson.M) bson.M {
 	if result["user"] != nil {
 		user, err := findUserDocumentByID(result["user"].(primitive.ObjectID))
 		if err != nil {
 			log.Print(err)
 		}
-		result["user"] = user.Username
+		
+		if user == (User{}) {
+			result["user"] = "[removed]"
+			result["user_count"] = "removed"
+			result["user_status"] = "offline"
+		} else {
+			result["user"] = user.Username
+			result["user_count"] = user.Count
+			if val, ok := clientUserIDs[user.ID]; ok {
+				if time.Now().Unix() - val.Unix() < 60 {
+					result["user_status"] = "active"
+				} else {
+					result["user_status"] = "away"
+				}
+			} else {
+				result["user_status"] = "offline"
+			}
+		}
 	}
 	return result
 }
@@ -345,6 +365,13 @@ func insertDocumentInDatabase(data interface{}, collectionName string) (*mongo.I
 			if document != nil {
 				return nil, errors.New(location.Name + " has already been added!")
 			}
+		}
+	}
+	if collectionName == "chat" {
+		chatMessage, ok := data.(*ChatMessage)
+		if ok && chatMessage.Message == "" {
+			err := "Message can not be empty!"
+			return nil, errors.New(err)
 		}
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
