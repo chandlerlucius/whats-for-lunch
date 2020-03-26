@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -72,7 +73,7 @@ func authenticate(token string) (int, *Claims, string, error) {
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	})
-	
+
 	user, err1 := findUserDocumentByID(claims.User.ID)
 	if err != nil || err1 != nil || !tkn.Valid || user == (User{}) {
 		return http.StatusUnauthorized, &Claims{}, "", err
@@ -103,7 +104,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if user.ID == primitive.NilObjectID {
 		hash := hashPassword(password)
-		user = User{primitive.NewObjectID(), username, hash}
+		count := findNextUserCount()
+		user = User{primitive.NewObjectID(), time.Now(), count, username, hash}
 		res, err := insertUserIntoDatabase(&user, "user")
 		if err != nil {
 			status := http.StatusInternalServerError
@@ -174,9 +176,40 @@ func findUserDocumentByID(id primitive.ObjectID) (User, error) {
 	return user, err
 }
 
+func findNextUserCount() int {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	findOptions := options.Find()
+	findOptions.SetSort(bson.M{"count": 1})
+
+	collection := mongoClient.Database(database).Collection("user")
+	cur, err := collection.Find(ctx, bson.D{}, findOptions)
+	if err != nil {
+		log.Print(err)
+	}
+
+	var count = 0
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		var user User
+		err1 := cur.Decode(&user)
+		if err1 != nil {
+			log.Print(err1)
+		}
+		if user.Count != count {
+			return count
+		}
+		count++
+	}
+	return count
+}
+
 // User is a simple user auth object
 type User struct {
 	ID       primitive.ObjectID `bson:"_id, omitempty"`
+	Date     time.Time
+	Count    int
 	Username string
 	Password string
 }
