@@ -109,6 +109,14 @@ class App extends React.Component {
     }
   }
 
+  submitWhenEnterPressed(event) {
+    if(event.which == 13) {
+      event.preventDefault();
+      const form = event.target.closest('form');
+      submitFormAsJson(form);
+    }
+  }
+
   render() {
     resetAuthTimeout(this.props.timeout);
     return [
@@ -121,7 +129,7 @@ class App extends React.Component {
         {/* <h2 className="close toggle" onClick={this.toggleLeftMenu}>✕</h2> */}
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
-          <textarea name="message" className="chat-textarea"></textarea>
+          <textarea name="message" className="chat-textarea" required={true} onKeyPress={this.submitWhenEnterPressed}></textarea>
           <button type="submit">Send</button>
         </form>
       </div>,
