@@ -3,14 +3,19 @@ import ReactDOM from 'react-dom'
 import { formatDate } from './App';
 
 class Chat extends React.Component {
+  scrollToBottomOfChat() {
+    const container = document.querySelector('.chat-container');
+    container.scrollTop = container.scrollHeight;
+  }
+
   componentDidMount() {
-    ReactDOM.findDOMNode(this).parentNode.scrollTop = ReactDOM.findDOMNode(this).parentNode.scrollHeight;
+    this.scrollToBottomOfChat();
   }
 
   componentDidUpdate() {
     const audio = new Audio('aimrcv.wav');
     audio.play();
-    ReactDOM.findDOMNode(this).parentNode.scrollTop = ReactDOM.findDOMNode(this).parentNode.scrollHeight;
+    this.scrollToBottomOfChat();
   }
 
   render() {
@@ -18,11 +23,14 @@ class Chat extends React.Component {
       this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
         <div key={index} className="chat-inner-container">
           <div className="chat-icon-container">
-            <h3 className="chat-icon">
+            <h3 className="chat-icon" style={{ background: "var(--user-color-" + (message.user_count % 11) + ")" }}>
               {message.user.toUpperCase().charAt(0)}
             </h3>
           </div>
           <div>
+            <strong className="chat-status" style={{ color: "var(--user-color-" + (message.user_status) + ")" }}>
+              ●
+            </strong>
             <strong>
               {message.user}
             </strong>
