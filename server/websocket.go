@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -16,7 +17,7 @@ import (
 )
 
 var clientTokens = make(map[*websocket.Conn]string)
-var clientUserIDs = make(map[primitive.ObjectID]time.Time)
+var clientUserIDs = sync.Map{}
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -35,18 +36,21 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	authenticated, token, claims := authenticateWebsocket(c, token)
 	if !authenticated {
+		message := websocket.FormatCloseMessage(4001, "Session expired. Please log in again.")
+		c.WriteMessage(websocket.CloseMessage, message)
 		return
 	}
 	clientTokens[c] = token
-	clientUserIDs[claims.User.ID] = time.Now()
+	clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 
 	writeDocumentsToClient(c, "location", claims)
 	writeDocumentsToClient(c, "chat", claims)
-	handleConnection(c)
+	handleConnection(c, claims.User.ID.Hex())
 }
 
-func handleConnection(c *websocket.Conn) {
+func handleConnection(c *websocket.Conn, userID string) {
 	defer func() {
+		clientUserIDs.Delete(userID)
 		delete(clientTokens, c)
 		c.Close()
 	}()
@@ -60,15 +64,43 @@ func handleConnection(c *websocket.Conn) {
 		}
 		authenticated, token, claims := authenticateWebsocket(c, clientTokens[c])
 		if !authenticated {
-			return
+			break
 		}
-		clientTokens[c] = token
-		clientUserIDs[claims.User.ID] = time.Now()
 
 		websocketMessage := &WebsocketMessage{}
-		err2 := json.Unmarshal(bytes, websocketMessage)
-		if err2 != nil {
-			log.Print(err2)
+		err1 := json.Unmarshal(bytes, websocketMessage)
+		if err1 != nil {
+			log.Print(err1)
+		}
+		log.Print("Message received from websocket. User: " + claims.User.Username + " | Message: " + websocketMessage.Type)
+
+		if websocketMessage.Type == "background" {
+			var results []bson.M
+			clientUserIDs.Range(func(key interface{}, value interface{}) bool {
+				date := value.(time.Time)
+				var status = "offline"
+				if date.Before(time.Now().Add(-5 * time.Minute)) {
+					status = "away"
+				} else {
+					status = "active"
+				}
+				var result = bson.M{"id": key, "date": date, "status": status}
+				results = append(results, result)
+				return true
+			})
+			var body bson.M = bson.M{"type": "background", "body": results}
+
+			err3 := c.WriteJSON(body)
+			if err3 != nil {
+				log.Print(err3)
+			}
+			if websocketMessage.Active {
+				clientTokens[c] = token
+				clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
+			}
+		} else {
+			clientTokens[c] = token
+			clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 		}
 
 		if websocketMessage.Type == "chat" {
@@ -126,7 +158,7 @@ func writeDocumentsToClient(c *websocket.Conn, collectionName string, claims *Cl
 		if err1 != nil {
 			log.Print(err1)
 		}
-		result = replaceUserIDWithUserDetails(result)
+		result = replaceUserIDWithUserDetails(result, claims)
 		if result["up_votes"] != nil {
 			result = fixVoteJSON(result, "up_votes", claims)
 		}
@@ -149,42 +181,37 @@ func fixVoteJSON(result bson.M, voteType string, claims *Claims) bson.M {
 		vote := vote.(bson.M)
 		if vote["user"] == claims.User.ID {
 			if voteType == "up_votes" {
-				result["voted"] = 1
+				result["voted"] = "up"
 			}
 			if voteType == "down_votes" {
-				result["voted"] = -1
+				result["voted"] = "down"
 			}
 		}
-		vote = replaceUserIDWithUserDetails(vote)
+		vote = replaceUserIDWithUserDetails(vote, claims)
 		votes = append(votes, vote)
 	}
 	result[voteType] = votes
 	return result
 }
 
-func replaceUserIDWithUserDetails(result bson.M) bson.M {
+func replaceUserIDWithUserDetails(result bson.M, claims *Claims) bson.M {
 	if result["user"] != nil {
 		user, err := findUserDocumentByID(result["user"].(primitive.ObjectID))
 		if err != nil {
 			log.Print(err)
 		}
-		
+
 		if user == (User{}) {
-			result["user"] = "[removed]"
+			result["user_id"] = "removed"
+			result["user_name"] = "[removed]"
 			result["user_count"] = "removed"
-			result["user_status"] = "offline"
 		} else {
-			result["user"] = user.Username
+			result["user_id"] = user.ID
+			result["user_name"] = user.Username
 			result["user_count"] = user.Count
-			if val, ok := clientUserIDs[user.ID]; ok {
-				if time.Now().Unix() - val.Unix() < 60 {
-					result["user_status"] = "active"
-				} else {
-					result["user_status"] = "away"
-				}
-			} else {
-				result["user_status"] = "offline"
-			}
+		}
+		if user.ID == claims.User.ID {
+			result["added"] = true
 		}
 	}
 	return result
@@ -278,7 +305,7 @@ func updateDocument(c *websocket.Conn, bytes []byte, data interface{}, collectio
 	}
 }
 
-func updateDocumentInDatabase(data interface{}, collectionName string) (*mongo.UpdateResult, string, error) {
+func updateDocumentInDatabase(data interface{}, collectionName string) (interface{}, string, error) {
 	filter := bson.M{}
 	update := bson.M{}
 	response := ""
@@ -303,7 +330,7 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (*mongo.U
 				log.Print(err)
 			}
 
-			if vote.Value == "1" {
+			if vote.Value == "up" {
 				if upVoteLocation.Name != "" {
 					// Remove entry from up_votes and decrement vote_count by 1 if user previously upvoted
 					pullField = bson.M{"up_votes": bson.M{"user": vote.User}}
@@ -324,7 +351,7 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (*mongo.U
 					update = bson.M{"$push": pushField, "$inc": incField}
 					response = "Up vote added successfully!"
 				}
-			} else if vote.Value == "-1" {
+			} else if vote.Value == "down" {
 				if downVoteLocation.Name != "" {
 					// Remove entry from down_votes and increment vote_count by 1 if user previously downvoted
 					pullField = bson.M{"down_votes": bson.M{"user": vote.User}}
@@ -345,6 +372,17 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (*mongo.U
 					update = bson.M{"$push": pushField, "$inc": incField}
 					response = "Down vote added successfully!"
 				}
+			} else if vote.Value == "remove" {
+				if vote.Location != "" && vote.User == document["user"] {
+					res, err := deleteDocumentByName("location", vote.Location)
+					if res.DeletedCount == 1 {
+						response = "Successfully removed " + vote.Location + "!"
+						return res, response, err
+					}
+					return nil, "", errors.New(vote.Location + " not found!")
+				}
+				message := "You did not add this location so you cannot remove it!"
+				return nil, "", errors.New(message)
 			}
 		}
 	}
@@ -399,10 +437,20 @@ func searchDocumentsForName(collectionName string, name string) bson.M {
 	return nil
 }
 
+func deleteDocumentByName(collectionName string, name string) (*mongo.DeleteResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	collection := mongoClient.Database(database).Collection(collectionName)
+	res, err := collection.DeleteOne(ctx, bson.M{"name": name})
+	return res, err
+}
+
 // WebsocketMessage contains a general message format from client
 type WebsocketMessage struct {
-	Type string                 `json:"type"`
-	Body map[string]interface{} `json:"-"`
+	Type   string                 `json:"type"`
+	Active bool                   `json:"active"`
+	Body   map[string]interface{} `json:"-"`
 }
 
 // ChatMessage is used to identify a chat message
