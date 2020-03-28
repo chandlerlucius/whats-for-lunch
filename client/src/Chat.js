@@ -1,5 +1,4 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 import { formatDate } from './App';
 
 class Chat extends React.Component {
@@ -24,15 +23,15 @@ class Chat extends React.Component {
         <div key={index} className="chat-inner-container">
           <div className="chat-icon-container">
             <h3 className="chat-icon" style={{ background: "var(--user-color-" + (message.user_count % 11) + ")" }}>
-              {message.user.toUpperCase().charAt(0)}
+              {message.user_name.toUpperCase().charAt(0)}
             </h3>
           </div>
           <div>
-            <strong className="chat-status" style={{ color: "var(--user-color-" + (message.user_status) + ")" }}>
+            <strong className={"chat-status user-status-" + message.user_id} title={"offline"}>
               ●
             </strong>
             <strong>
-              {message.user}
+              {message.user_name}
             </strong>
             <i className="chat-date">
               {formatDate(message.date)}
