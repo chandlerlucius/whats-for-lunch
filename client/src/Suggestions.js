@@ -59,7 +59,7 @@ class Suggestions extends React.Component {
           <div>
             <h3>{location.name}</h3>
             {location.added ?
-              <h2 className="vote-remove" title="Remove location" onClick={this.submitForm} value="remove">✕</h2>
+              <h2 className="vote-remove" title="Click to remove location" onClick={this.submitForm} value="remove">✕</h2>
               : ""}
           </div>
           <input type="hidden" name="location" value={location.name}></input>
