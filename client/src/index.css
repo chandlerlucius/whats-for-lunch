@@ -18,7 +18,7 @@
   --user-color-8: #fb8c00;
   --user-color-9: #f4511e;
   --user-color-10: #e53935;
-  
+
   --user-color-active: var(--success-color);
   --user-color-offline: var(--secondary-color);
   --user-color-away: #ffd21f;
@@ -254,10 +254,12 @@ a:hover {
   height: 100%;
   width: 100%;
   padding: 0;
+  resize: none;
 }
 
 .chat-status {
   margin-right: 10px;
+  color: var(--secondary-color);
 }
 
 .chat-date {
@@ -373,11 +375,19 @@ a:hover {
   align-items: center;
 }
 
-.vote-form>div>h2 {
+.vote-form h2,
+.vote-form h3 {
   margin: 5px;
+}
+
+.vote-form h2 {
   cursor: pointer;
 }
 
 .vote-checkmark {
   color: var(--success-color);
+}
+
+.vote-remove {
+  color: var(--failure-color);
 }
