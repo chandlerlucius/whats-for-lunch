@@ -19,17 +19,12 @@ if (window.location.protocol === 'https:') {
 }
 
 let socketTimeout;
-let authenticateInterval;
+let logoutTimeout;
+let backgroundTimeout;
 class App extends React.Component {
   componentDidMount() {
     ReactDOM.render(<Search />, document.querySelector('.search-container'));
     ReactDOM.render(<Map />, document.querySelector('.map-container'));
-
-    const clearSocketTimeout = function () {
-      if (socketTimeout) {
-        clearTimeout(socketTimeout);
-      }
-    }
 
     const setSocketTimeout = function () {
       console.log('Socket closed. Attempting reconnect in 5 seconds.');
@@ -42,7 +37,8 @@ class App extends React.Component {
       const token = localStorage.getItem('token');
       socket = new WebSocket(url + '?token=' + token);
       socket.onopen = function () {
-        clearSocketTimeout();
+        clearTimeoutsAndIntervals();
+        backgroundWebsocket();
       };
 
       socket.onclose = function (event) {
@@ -50,7 +46,6 @@ class App extends React.Component {
           ReactDOM.render(<Login message={event.reason} color="var(--failure-color)" />, document.querySelector('.root'));
         } else {
           setSocketTimeout();
-          // window.location.reload();
         }
       };
 
@@ -59,6 +54,9 @@ class App extends React.Component {
         renderToast(message, "var(--failure-color)")
         setTimeout(function () { renderToast(message + ".", "var(--failure-color)") }, 1000)
         setTimeout(function () { renderToast(message + "..", "var(--failure-color)") }, 2000)
+        setTimeout(function () { renderToast(message + "...", "var(--failure-color)") }, 3000)
+        setTimeout(function () { renderToast(message + "....", "var(--failure-color)") }, 4000)
+        setTimeout(function () { renderToast(message + ".....", "var(--failure-color)") }, 5000)
         socket.close();
       };
 
@@ -68,24 +66,36 @@ class App extends React.Component {
           localStorage.setItem("token", json.token)
         }
         if (json.timeout) {
-          resetAuthTimeout(json.timeout);
+          resetLogoutTimeout(json.timeout);
         }
         if (json.status === 200) {
           if (json.title === 'chat') {
             document.querySelector('.chat-textarea').value = '';
           }
-          ReactDOM.render(<Toast message={json.body} color={'var(--success-color)'} />, document.querySelector('.toast-container'));
+          renderToast(json.body, "var(--success-color)")
         } else if (json.status !== undefined) {
-          ReactDOM.render(<Toast message={json.body} color={'var(--failure-color)'} />, document.querySelector('.toast-container'));
+          renderToast(json.body, "var(--failure-color)")
         } else if (json.type === 'chat') {
           ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
         } else if (json.type === 'location') {
           ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
+        } else if (json.type === 'background') {
+          document.querySelectorAll('.chat-status').forEach(function(element) {
+            element.style.color = 'var(--user-color-offline)';
+            element.title = 'offline';
+          }); 
+          json.body.forEach(function(user) {
+            document.querySelectorAll('.user-status-' + user.id).forEach(function(element) {
+              element.style.color = 'var(--user-color-' + user.status + ')';
+              element.title = user.status;
+              element.title += '\nLast Seen: ' + formatDate(user.date);
+            }); 
+          });
+          resetBackgroundTimeout(10000);
         }
       }
     };
     start();
-
     convertFormSubmitToJsonSubmit(document.querySelector('.chat-form'));
   }
 
@@ -110,7 +120,7 @@ class App extends React.Component {
   }
 
   submitWhenEnterPressed(event) {
-    if(event.which == 13) {
+    if(event.which === 13) {
       event.preventDefault();
       const form = event.target.closest('form');
       submitFormAsJson(form);
@@ -118,7 +128,6 @@ class App extends React.Component {
   }
 
   render() {
-    resetAuthTimeout(this.props.timeout);
     return [
       <nav key="nav">
         <h2 className="toggle" onClick={this.toggleLeftMenu}>💬</h2>
@@ -147,13 +156,22 @@ class App extends React.Component {
   }
 }
 
-const resetAuthTimeout = function (timeout) {
-  clearInterval(authenticateInterval);
-  authenticateInterval = setInterval(authenticateWebsocket, timeout);
+const resetLogoutTimeout = function (timeout) {
+  clearTimeout(logoutTimeout);
+  logoutTimeout = setTimeout(reloadPage, timeout);
 }
 
-const authenticateWebsocket = function () {
-  const map = { 'type': 'authenticate' };
+const reloadPage = function() {
+  window.location.reload();
+}
+
+const resetBackgroundTimeout = function (timeout) {
+  clearTimeout(backgroundTimeout);
+  backgroundTimeout = setTimeout(backgroundWebsocket, timeout);
+}
+
+const backgroundWebsocket = function () {
+  const map = { 'type': 'background' , "active": !document.hidden};
   sendWebsocketMessage(map);
 }
 
@@ -185,7 +203,8 @@ export const sendWebsocketMessage = function (map) {
 
 export const clearTimeoutsAndIntervals = function () {
   clearTimeout(socketTimeout);
-  clearInterval(authenticateInterval);
+  clearTimeout(logoutTimeout);
+  clearTimeout(backgroundTimeout);
 }
 
 export const formatDate = function (date) {
