@@ -14,7 +14,6 @@ class Chat extends React.Component {
   componentDidUpdate() {
     const audio = new Audio('aimrcv.wav');
     audio.play();
-    this.scrollToBottomOfChat();
   }
 
   render() {
