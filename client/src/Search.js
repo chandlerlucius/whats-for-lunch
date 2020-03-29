@@ -3,9 +3,22 @@ import React from 'react'
 class Search extends React.Component {
   render() {
     return [
-      <input key="restaurant-seach" id="restaurant-search" placeholder="Search for restaurant by name" type="text" />,
-      <input key="food-search" id="food-search" placeholder="Search for restaurant by food type" type="search" />,
-      <button key="food-search-button" id="food-search-button">Search</button>
+      <div key="manual-location" className="search-form">
+        <div>
+          <input class="location-add" placeholder="Add restaurant manually" type="search" />
+        </div>
+        <div>
+          <button class="location-add-button">Add</button>
+        </div>
+      </div>,
+      <div key="google-location" className="search-form">
+        <div>
+          <input class="location-search" placeholder="Search for restaurant or food type" type="search" />
+        </div>
+        <div>
+          <button class="location-search-button">Search</button>
+        </div>
+      </div>,
     ]
   }
 }
