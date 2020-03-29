@@ -48,12 +48,12 @@ class Map extends React.Component {
       });
       autocomplete.addListener('place_changed', onPlaceChanged);
 
-      const foodSearch = document.querySelector('#food-search');
+      const foodSearch = document.querySelector('.location-search');
       foodSearch.addEventListener('search', function () {
         search(foodSearch.value);
       });
 
-      const foodSearchButton = document.querySelector('#food-search-button');
+      const foodSearchButton = document.querySelector('.location-search-button');
       foodSearchButton.addEventListener('click', function () {
         search(foodSearch.value);
       });
@@ -82,6 +82,12 @@ class Map extends React.Component {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
           clearResults();
           clearMarkers();
+          document.querySelectorAll('.welcome-message-3').forEach(function(element) {
+            element.innerHTML = '🡠';
+          });
+          document.querySelectorAll('.welcome-message-4').forEach(function(element) {
+            element.innerHTML = 'Then click a listing in the table to see its details!';
+          });
           // Create a marker for each hotel found, and
           // assign a letter of the alphabetic to each marker icon.
           for (var i = 0; i < results.length; i++) {
