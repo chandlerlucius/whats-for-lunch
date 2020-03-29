@@ -88,15 +88,15 @@ func handleConnection(c *websocket.Conn, userID string) {
 				results = append(results, result)
 				return true
 			})
-			var body bson.M = bson.M{"type": "background", "body": results}
-
-			err3 := c.WriteJSON(body)
-			if err3 != nil {
-				log.Print(err3)
-			}
 			if websocketMessage.Active {
 				clientTokens[c] = token
 				clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
+			}
+
+			var body bson.M = bson.M{"type": "background", "token": clientTokens[c], "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
+			err3 := c.WriteJSON(body)
+			if err3 != nil {
+				log.Print(err3)
 			}
 		} else {
 			clientTokens[c] = token
