@@ -40,6 +40,10 @@ nav {
   background: var(--primary-color);
 }
 
+h2 {
+  cursor: pointer;
+}
+
 h2,
 h3 {
   margin: 0;
@@ -67,19 +71,6 @@ button {
 hr {
   margin: 20px;
   border: 1px solid rgba(160, 160, 160, 0.2);
-}
-
-.input-container {
-  width: 65%;
-  margin: auto;
-  text-align: left;
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.input-container span {
-  font-size: 12px;
-  opacity: 0;
 }
 
 input {
@@ -122,15 +113,6 @@ input:invalid:not(:placeholder-shown)~label {
   opacity: 1;
 }
 
-label {
-  top: 10px;
-  left: 0;
-  position: absolute;
-  transition: all .25s;
-  pointer-events: none;
-  color: var(--primary-color);
-}
-
 button {
   border: none;
   padding: 10px;
@@ -159,30 +141,26 @@ a:hover {
   text-decoration: underline;
 }
 
-.toast-container {
-  bottom: 0;
-  z-index: 1;
-  opacity: 0.9;
-  display: flex;
-  padding: 10px;
-  position: fixed;
-  text-align: center;
-  align-items: center;
-  margin-bottom: -10%;
-  transition: all 0.5s;
-  background: var(--secondary-color);
+.input-container {
+  width: 65%;
+  margin: auto;
+  text-align: left;
+  position: relative;
+  margin-bottom: 20px;
 }
 
-.toast-close {
-  margin-left: 25px;
-  color: #FFFFFF;
-  cursor: pointer;
+.input-container span {
+  font-size: 12px;
+  opacity: 0;
 }
 
-.toggle {
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
+.input-container label {
+  top: 10px;
+  left: 0;
+  position: absolute;
+  transition: all .25s;
+  pointer-events: none;
+  color: var(--primary-color);
 }
 
 .root {
@@ -208,6 +186,97 @@ a:hover {
   font-weight: bold;
 }
 
+.center {
+  width: 50%;
+  margin-top: 50px;
+  overflow: auto;
+}
+
+.vote-form,
+.search-form {
+  display: flex;
+}
+
+.vote-form>div:first-child,
+.search-form>div:first-child {
+  justify-content: flex-end;
+}
+
+.vote-form>div:nth-child(2),
+.search-form>div>input {
+  width: 75%;
+}
+
+.vote-form>div,
+.search-form>div {
+  width: 50%;
+  display: flex;
+  margin: 5px;
+  align-items: center;
+}
+
+.vote-form h1 {
+  margin: 0 20px 0 20px;
+}
+
+.vote-form h2,
+.vote-form h3 {
+  margin: 5px;
+}
+
+.vote-form h1,
+.vote-form h2,
+.vote-form h3 {
+  cursor: pointer;
+}
+
+.vote-form h3:hover {
+  text-decoration: underline;
+}
+
+.vote-checkmark {
+  color: var(--success-color);
+}
+
+.vote-remove {
+  color: var(--failure-color);
+}
+
+.vote-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  border: 1px solid;
+  border-radius: 5px;
+}
+
+.search-form>div:first-child {
+  width: 100%;
+}
+
+.map-container {
+  height: 400px;
+  display: flex;
+  margin-top: 20px;
+  background: #AAA;
+  color: #000;
+}
+
+.listing {
+  overflow: auto;
+  border-left: var(--secondary-color) solid;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+#resultsTable {
+  width: 250px;
+}
+
 .left,
 .right {
   top: 0;
@@ -223,14 +292,13 @@ a:hover {
 }
 
 .left>*,
-.right>*,
-.details-container>* {
+.right>h2,
+.details-container>div>* {
   margin: 10px;
 }
 
 .left {
   left: 0;
-  margin-top: 50px;
   margin-left: -25%;
 }
 
@@ -238,12 +306,11 @@ a:hover {
   margin-left: 0;
 }
 
-.left .toggle {
+.right .toggle {
   text-align: right;
 }
 
 .chat-container {
-  height: 50%;
   cursor: text;
   padding: 5px;
   overflow: auto;
@@ -251,7 +318,6 @@ a:hover {
 }
 
 .chat-textarea {
-  height: 100%;
   width: 100%;
   padding: 0;
   resize: none;
@@ -289,6 +355,7 @@ a:hover {
 
 .chat-message {
   padding-bottom: 10px;
+  white-space: pre;
 }
 
 .right {
@@ -300,30 +367,16 @@ a:hover {
   margin-right: 0;
 }
 
-.map-container {
-  height: 400px;
+.details-welcome-div {
   display: flex;
-  margin-top: 20px;
-  background: #AAA;
-  color: #000;
 }
 
-.listing {
-  overflow: auto;
-  border-left: var(--secondary-color) solid;
-}
-
-.map {
-  width: 100%;
-  height: 100%;
-}
-
-#resultsTable {
-  width: 250px;
+.details-welcome-div h3:nth-child(odd) {
+  margin-right: 15px;
 }
 
 .photo {
-  width: 100%;
+  width: 95%;
   height: 200px;
   object-fit: cover;
   border-radius: 5px;
@@ -345,49 +398,22 @@ a:hover {
   padding-right: 5px;
 }
 
-.center {
-  width: 50%;
-  margin-top: 50px;
-  overflow: auto;
-}
-
-.vote-form {
+.toast-container {
+  bottom: 0;
+  z-index: 1;
+  opacity: 0.9;
   display: flex;
-}
-
-.vote-container {
-  display: flex;
+  padding: 10px;
+  position: fixed;
+  text-align: center;
   align-items: center;
-  justify-content: center;
-  width: 30px;
-  border: 1px solid;
-  border-radius: 5px;
+  margin-bottom: -10%;
+  transition: all 0.5s;
+  background: var(--secondary-color);
 }
 
-.vote-form>div:first-child {
-  justify-content: flex-end;
-}
-
-.vote-form>div {
-  width: 50%;
-  display: flex;
-  margin: 5px;
-  align-items: center;
-}
-
-.vote-form h2,
-.vote-form h3 {
-  margin: 5px;
-}
-
-.vote-form h2 {
+.toast-close {
+  margin-left: 25px;
+  color: #FFFFFF;
   cursor: pointer;
-}
-
-.vote-checkmark {
-  color: var(--success-color);
-}
-
-.vote-remove {
-  color: var(--failure-color);
 }
