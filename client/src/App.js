@@ -80,16 +80,16 @@ class App extends React.Component {
         } else if (json.type === 'location') {
           ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
         } else if (json.type === 'background') {
-          document.querySelectorAll('.chat-status').forEach(function(element) {
+          document.querySelectorAll('.chat-status').forEach(function (element) {
             element.style.color = 'var(--user-color-offline)';
             element.title = 'offline';
-          }); 
-          json.body.forEach(function(user) {
-            document.querySelectorAll('.user-status-' + user.id).forEach(function(element) {
+          });
+          json.body.forEach(function (user) {
+            document.querySelectorAll('.user-status-' + user.id).forEach(function (element) {
               element.style.color = 'var(--user-color-' + user.status + ')';
               element.title = user.status;
               element.title += '\nLast Seen: ' + formatDate(user.date);
-            }); 
+            });
           });
           resetBackgroundTimeout(10000);
         }
@@ -102,10 +102,10 @@ class App extends React.Component {
   toggleLeftMenu(event) {
     const menu = document.querySelector('.left');
     if (menu.classList.contains('left-menu-open')) {
-      event.target.innerHTML = '💬';
+      // event.target.innerHTML = '💬';
       menu.classList.remove('left-menu-open');
     } else {
-      event.target.innerHTML = '🡠';
+      // event.target.innerHTML = '🡠';
       menu.classList.add('left-menu-open');
     }
   }
@@ -120,7 +120,7 @@ class App extends React.Component {
   }
 
   submitWhenEnterPressed(event) {
-    if(event.which === 13) {
+    if (event.which === 13 && !event.shiftKey) {
       event.preventDefault();
       const form = event.target.closest('form');
       submitFormAsJson(form);
@@ -135,10 +135,10 @@ class App extends React.Component {
         <h2 className="toggle" onClick={this.toggleRightMenu}>☰</h2>
       </nav>,
       <div key="left" className="left left-menu-open">
-        {/* <h2 className="close toggle" onClick={this.toggleLeftMenu}>✕</h2> */}
+        <h2 className="close toggle" onClick={this.toggleLeftMenu}>🡠</h2>
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
-          <textarea name="message" className="chat-textarea" required={true} onKeyPress={this.submitWhenEnterPressed}></textarea>
+          <textarea name="message" className="chat-textarea" rows={4} required={true} placeholder="Send a message..." onKeyPress={this.submitWhenEnterPressed}></textarea>
           <button type="submit">Send</button>
         </form>
       </div>,
@@ -149,7 +149,17 @@ class App extends React.Component {
       </div>,
       <div key="right" className="right right-menu-open">
         <h2 className="close toggle" onClick={this.toggleRightMenu}>✕</h2>
-        <div className="details-container"></div>
+        <div className="details-container">
+          <h1>Welcome!</h1>
+          <div className="details-welcome-div">
+            <h3>🡠</h3>
+            <h3>Add a restaurant or search for one to the left to get started!</h3>
+          </div>
+          <div className="details-welcome-div">
+            <h3 className="welcome-message-3"></h3>
+            <h3 className="welcome-message-4"></h3>
+          </div>
+        </div>
       </div>,
       <div key="toast" className="toast-container"></div>
     ]
@@ -161,7 +171,7 @@ const resetLogoutTimeout = function (timeout) {
   logoutTimeout = setTimeout(reloadPage, timeout);
 }
 
-const reloadPage = function() {
+const reloadPage = function () {
   window.location.reload();
 }
 
@@ -171,7 +181,7 @@ const resetBackgroundTimeout = function (timeout) {
 }
 
 const backgroundWebsocket = function () {
-  const map = { 'type': 'background' , "active": !document.hidden};
+  const map = { 'type': 'background', "active": !document.hidden };
   sendWebsocketMessage(map);
 }
 
