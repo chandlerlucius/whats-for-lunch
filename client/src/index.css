@@ -296,7 +296,8 @@ nav, .right, .left {
 }
 
 .left>*,
-.details-container>div>* {
+.details-div>div>*,
+.details-welcome-div>* {
   margin: 10px;
 }
 
