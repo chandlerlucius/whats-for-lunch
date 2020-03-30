@@ -1,16 +1,23 @@
 import React from 'react'
+import { submitFormAsJson } from './App';
 
 class Search extends React.Component {
+
+  submitForm(event) {
+    event.preventDefault();
+    submitFormAsJson(event.target);
+  }
+  
   render() {
     return [
-      <div key="manual-location" className="search-form">
+      <form key="manual-location" className="search-form" method="POST" action="location" onSubmit={this.submitForm}>
         <div>
-          <input className="location-add" placeholder="Add restaurant manually" type="search" />
+          <input className="location-add" placeholder="Add restaurant manually" type="search" name="name"/>
         </div>
         <div>
           <button className="location-add-button">Add</button>
         </div>
-      </div>,
+      </form>,
       <div key="google-location" className="search-form">
         <div>
           <input className="location-search" placeholder="Search for restaurant or food type" type="search" />
