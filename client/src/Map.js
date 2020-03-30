@@ -42,12 +42,6 @@ class Map extends React.Component {
 
       places = new window.google.maps.places.PlacesService(map);
 
-      const autocomplete = new window.google.maps.places.Autocomplete(
-        document.getElementById('restaurant-search'), {
-        types: ['establishment']
-      });
-      autocomplete.addListener('place_changed', onPlaceChanged);
-
       const foodSearch = document.querySelector('.location-search');
       foodSearch.addEventListener('search', function () {
         search(foodSearch.value);
@@ -57,14 +51,6 @@ class Map extends React.Component {
       foodSearchButton.addEventListener('click', function () {
         search(foodSearch.value);
       });
-    }
-
-    function onPlaceChanged() {
-      var place = this.getPlace();
-      if (place.geometry) {
-        map.panTo(place.geometry.location);
-        map.setZoom(15);
-      }
     }
 
     function search(keyword) {
@@ -82,30 +68,22 @@ class Map extends React.Component {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
           clearResults();
           clearMarkers();
-          document.querySelectorAll('.welcome-message-3').forEach(function(element) {
-            element.innerHTML = '🡠';
-          });
-          document.querySelectorAll('.welcome-message-4').forEach(function(element) {
-            element.innerHTML = 'Then click a listing in the table to see its details!';
-          });
-          // Create a marker for each hotel found, and
-          // assign a letter of the alphabetic to each marker icon.
           for (var i = 0; i < results.length; i++) {
             var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
             var markerIcon = 'https://developers.google.com/maps/documentation/javascript/images/marker_green' + markerLetter + '.png';
-            // Use marker animation to drop the icons incrementally on the map.
+            
             markers[i] = new window.google.maps.Marker({
               position: results[i].geometry.location,
               animation: window.google.maps.Animation.DROP,
               icon: markerIcon
             });
-            // If the user clicks a hotel marker, show the details of that hotel
-            // in an info window.
+            
             markers[i].placeResult = results[i];
             window.google.maps.event.addListener(markers[i], 'click', showInfoWindow);
             setTimeout(dropMarker(i), i * 100);
             addResult(results[i], i);
           }
+          ReactDOM.render(<Details listings={true}/>, document.querySelector('.details-container'));
         }
       });
     }
@@ -157,8 +135,6 @@ class Map extends React.Component {
       }
     }
 
-    // Get the place details for a hotel. Show the information in an info window,
-    // anchored on the marker for the hotel that the user selected.
     function showInfoWindow() {
       var marker = this;
       places.getDetails({
