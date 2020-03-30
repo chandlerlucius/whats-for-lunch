@@ -5,18 +5,18 @@ class Search extends React.Component {
     return [
       <div key="manual-location" className="search-form">
         <div>
-          <input class="location-add" placeholder="Add restaurant manually" type="search" />
+          <input className="location-add" placeholder="Add restaurant manually" type="search" />
         </div>
         <div>
-          <button class="location-add-button">Add</button>
+          <button className="location-add-button">Add</button>
         </div>
       </div>,
       <div key="google-location" className="search-form">
         <div>
-          <input class="location-search" placeholder="Search for restaurant or food type" type="search" />
+          <input className="location-search" placeholder="Search for restaurant or food type" type="search" />
         </div>
         <div>
-          <button class="location-search-button">Search</button>
+          <button className="location-search-button">Search</button>
         </div>
       </div>,
     ]
