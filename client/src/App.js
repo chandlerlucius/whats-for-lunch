@@ -80,7 +80,7 @@ class App extends React.Component {
           ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
         } else if (json.type === 'location') {
           ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
-          if(!document.querySelector('.google-details')) {
+          if(!document.querySelector('.details-div')) {
             ReactDOM.render(<Details/>, document.querySelector('.details-container'));
           }
         } else if (json.type === 'background') {
