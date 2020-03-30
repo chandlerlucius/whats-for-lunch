@@ -6,6 +6,7 @@ import Chat from './Chat';
 import Toast from './Toast'
 import Login from './Login'
 import Search from './Search';
+import Details from './Details'
 import Suggestions from './Suggestions';
 
 let url;
@@ -79,6 +80,9 @@ class App extends React.Component {
           ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
         } else if (json.type === 'location') {
           ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
+          if(!document.querySelector('.google-details')) {
+            ReactDOM.render(<Details/>, document.querySelector('.details-container'));
+          }
         } else if (json.type === 'background') {
           document.querySelectorAll('.chat-status').forEach(function (element) {
             element.style.color = 'var(--user-color-offline)';
@@ -99,13 +103,11 @@ class App extends React.Component {
     convertFormSubmitToJsonSubmit(document.querySelector('.chat-form'));
   }
 
-  toggleLeftMenu(event) {
+  toggleLeftMenu() {
     const menu = document.querySelector('.left');
     if (menu.classList.contains('left-menu-open')) {
-      // event.target.innerHTML = '💬';
       menu.classList.remove('left-menu-open');
     } else {
-      // event.target.innerHTML = '🡠';
       menu.classList.add('left-menu-open');
     }
   }
@@ -148,18 +150,8 @@ class App extends React.Component {
         <div className="map-container"></div>
       </div>,
       <div key="right" className="right right-menu-open">
-        <h2 className="close toggle" onClick={this.toggleRightMenu}>✕</h2>
-        <div className="details-container">
-          <h1>Welcome!</h1>
-          <div className="details-welcome-div">
-            <h3>🡠</h3>
-            <h3>Add a restaurant or search for one to the left to get started!</h3>
-          </div>
-          <div className="details-welcome-div">
-            <h3 className="welcome-message-3"></h3>
-            <h3 className="welcome-message-4"></h3>
-          </div>
-        </div>
+        <h2 className="close toggle" onClick={this.toggleRightMenu}>🡢</h2>
+        <div className="details-container"></div>
       </div>,
       <div key="toast" className="toast-container"></div>
     ]
