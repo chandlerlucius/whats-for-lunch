@@ -186,6 +186,10 @@ a:hover {
   font-weight: bold;
 }
 
+nav, .right, .left {
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+}
+
 .center {
   width: 50%;
   margin-top: 50px;
@@ -292,7 +296,6 @@ a:hover {
 }
 
 .left>*,
-.right>h2,
 .details-container>div>* {
   margin: 10px;
 }
@@ -304,10 +307,6 @@ a:hover {
 
 .left-menu-open {
   margin-left: 0;
-}
-
-.right .toggle {
-  text-align: right;
 }
 
 .chat-container {
@@ -367,12 +366,13 @@ a:hover {
   margin-right: 0;
 }
 
-.details-welcome-div {
-  display: flex;
+.right .toggle {
+  margin: 10px;
+  text-align: right;
 }
 
-.details-welcome-div h3:nth-child(odd) {
-  margin-right: 15px;
+.details-welcome-div {
+  display: flex;
 }
 
 .photo {
