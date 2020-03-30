@@ -399,6 +399,10 @@ func insertDocumentInDatabase(data interface{}, collectionName string) (*mongo.I
 	if collectionName == "location" {
 		location, ok := data.(*Location)
 		if ok {
+			if location.Name == "" {
+				err := "Location name cannot be empty!"
+				return nil, errors.New(err)
+			}
 			document := searchDocumentsForName(collectionName, location.Name)
 			if document != nil {
 				return nil, errors.New(location.Name + " has already been added!")
@@ -478,6 +482,7 @@ type Location struct {
 	Website          string             `json:"website"`
 	URL              string             `json:"url"`
 	Photo            string             `json:"photo"`
+	PlaceID          string             `json:"place_id" bson:"place_id"`
 	UserRatingsTotal string             `json:"user_ratings_total" bson:"user_ratings_total"`
 	PriceLevel       string             `json:"price_level" bson:"price_level"`
 	FormattedAddress string             `json:"formatted_address" bson:"formatted_address"`
