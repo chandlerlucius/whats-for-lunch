@@ -18,6 +18,14 @@ class Details extends React.Component {
     }
   }
 
+  setInfoWindowStyle() {
+    const infoWindow = document.querySelector('.gm-style-iw-d');
+    if(infoWindow) {
+      infoWindow.style.overflow = '';
+      document.querySelector('.gm-style-iw').style.background = 'var(--menu-color)';
+    }
+  }
+
   submitForm(event) {
     event.preventDefault();
     submitFormAsJson(event.target);
@@ -25,10 +33,12 @@ class Details extends React.Component {
 
   componentDidMount() {
     this.setMessagePositions();
+    this.setInfoWindowStyle();
   }
 
   componentDidUpdate() {
-    this.setMessagePositions()
+    this.setMessagePositions();
+    this.setInfoWindowStyle();
   }
 
   render() {
@@ -41,7 +51,11 @@ class Details extends React.Component {
         <div className="details-div">
           {this.props.place.place_id !== "" ?
             <div>
-              <img key="detail-photo" className="photo" alt="Restaurant" src={photo} />
+              {!this.props.window ?
+                <img key="detail-photo" className="photo" alt="Restaurant" src={photo} />
+                :
+                ""
+              }
               <h2 key="detail-name">{this.props.place.name}</h2>
               <RestaurantDetails place={this.props.place} />
               <div key="detail-address" className="detail-item">
@@ -85,7 +99,7 @@ class Details extends React.Component {
       const messageThreeStyle = {
         display: 'none',
       };
-      if (document.querySelector('#results').children.length > 0) {
+      if (document.querySelector('.listings').children.length > 0) {
         messageThreeStyle.display = '';
       }
       return [
