@@ -187,7 +187,8 @@ a:hover {
 }
 
 nav, .right, .left {
-  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+  box-shadow: 0 0 3px #000000;
+  /* box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2); */
 }
 
 .center {
@@ -263,13 +264,7 @@ nav, .right, .left {
   height: 400px;
   display: flex;
   margin-top: 20px;
-  background: #AAA;
-  color: #000;
-}
-
-.listing {
-  overflow: auto;
-  border-left: var(--secondary-color) solid;
+  background: var(--menu-color);
 }
 
 .map {
@@ -277,8 +272,33 @@ nav, .right, .left {
   height: 100%;
 }
 
-#resultsTable {
-  width: 250px;
+.listings-container {
+  overflow: auto;
+  color: #FFF;
+  cursor: pointer;
+  transition: all 1s;
+}
+
+.listings>tr>td:first-child {
+  color: #000;
+  padding: 5px;
+  display: flex;
+  position: relative;
+  justify-content: center;
+}
+
+.listings>tr>td>img {
+  height: 40px;
+}
+
+.listings>tr>td>span {
+  position: absolute;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.info-window-container {
+  background: var(--menu-color);
 }
 
 .left,
