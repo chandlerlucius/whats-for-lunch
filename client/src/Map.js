@@ -6,11 +6,12 @@ class Map extends React.Component {
   render() {
     return [
       <div className="map" key="map"></div>,
-      <div className="listing" key="listing">
-        <table id="resultsTable">
-          <tbody id="results"></tbody>
+      <div className="info-window-container" key="info-window-container"></div>,
+      <div className="listings-container" key="listings">
+        <table className="listings-table">
+          <tbody className="listings"></tbody>
         </table>
-      </div>
+      </div>,
     ];
   }
 
@@ -37,8 +38,9 @@ class Map extends React.Component {
       navigator.geolocation.getCurrentPosition(setCenter);
 
       infoWindow = new window.google.maps.InfoWindow({
-        content: document.getElementById('info-content')
+        content: document.querySelector('.info-window-container')
       });
+      window.google.maps.event.addListenerOnce(infoWindow, 'domready', setInfoWindowStyle);
 
       places = new window.google.maps.places.PlacesService(map);
 
@@ -70,20 +72,18 @@ class Map extends React.Component {
           clearMarkers();
           for (var i = 0; i < results.length; i++) {
             var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-            var markerIcon = 'https://developers.google.com/maps/documentation/javascript/images/marker_green' + markerLetter + '.png';
-            
             markers[i] = new window.google.maps.Marker({
+              label: markerLetter,
               position: results[i].geometry.location,
               animation: window.google.maps.Animation.DROP,
-              icon: markerIcon
             });
-            
+
             markers[i].placeResult = results[i];
             window.google.maps.event.addListener(markers[i], 'click', showInfoWindow);
             setTimeout(dropMarker(i), i * 100);
             addResult(results[i], i);
           }
-          ReactDOM.render(<Details listings={true}/>, document.querySelector('.details-container'));
+          ReactDOM.render(<Details listings={true} />, document.querySelector('.details-container'));
         }
       });
     }
@@ -104,12 +104,11 @@ class Map extends React.Component {
     }
 
     function addResult(result, i) {
-      var results = document.getElementById('results');
+      var results = document.querySelector('.listings');
       var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-      var markerIcon = 'https://developers.google.com/maps/documentation/javascript/images/marker_green' + markerLetter + '.png';
 
       var tr = document.createElement('tr');
-      tr.style.backgroundColor = (i % 2 === 0 ? '#F0F0F0' : '#FFFFFF');
+      tr.style.backgroundColor = (i % 2 === 0 ? 'var(--secondary-color)' : 'var(--menu-color)');
       tr.onclick = function () {
         window.google.maps.event.trigger(markers[i], 'click');
       };
@@ -117,11 +116,12 @@ class Map extends React.Component {
       var iconTd = document.createElement('td');
       var nameTd = document.createElement('td');
       var icon = document.createElement('img');
-      icon.src = markerIcon;
-      icon.setAttribute('class', 'placeIcon');
-      icon.setAttribute('className', 'placeIcon');
+      icon.src = 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi-dotless2_hdpi.png';
       var name = document.createTextNode(result.name);
       iconTd.appendChild(icon);
+      var letter = document.createElement('span');
+      letter.innerHTML = markerLetter;
+      iconTd.appendChild(letter);
       nameTd.appendChild(name);
       tr.appendChild(iconTd);
       tr.appendChild(nameTd);
@@ -129,7 +129,7 @@ class Map extends React.Component {
     }
 
     function clearResults() {
-      var results = document.getElementById('results');
+      var results = document.querySelector('.listings');
       while (results.childNodes[0]) {
         results.removeChild(results.childNodes[0]);
       }
@@ -146,7 +146,13 @@ class Map extends React.Component {
           }
           infoWindow.open(map, marker);
           ReactDOM.render(<Details place={place} />, document.querySelector('.details-container'));
+          ReactDOM.render(<Details place={place} window={true} />, document.querySelector('.info-window-container'));
         });
+    }
+
+    function setInfoWindowStyle() {
+      document.querySelector('.gm-style-iw-d').style.overflow = '';
+      document.querySelector('.gm-style-iw').style.background = 'var(--menu-color)';
     }
 
     initMap();
