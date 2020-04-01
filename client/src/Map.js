@@ -151,7 +151,7 @@ class Map extends React.Component {
     }
 
     function setInfoWindowStyle() {
-      document.querySelector('.gm-style-iw-d').style.overflow = '';
+      document.querySelector('.gm-style-iw-d').style.overflow = 'hidden';
       document.querySelector('.gm-style-iw').style.background = 'var(--menu-color)';
     }
 
