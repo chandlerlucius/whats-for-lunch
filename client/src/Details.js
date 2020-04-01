@@ -21,7 +21,7 @@ class Details extends React.Component {
   setInfoWindowStyle() {
     const infoWindow = document.querySelector('.gm-style-iw-d');
     if(infoWindow) {
-      infoWindow.style.overflow = '';
+      infoWindow.style.overflow = 'hidden';
       document.querySelector('.gm-style-iw').style.background = 'var(--menu-color)';
     }
   }
