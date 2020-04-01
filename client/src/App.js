@@ -88,13 +88,15 @@ class App extends React.Component {
             element.style.color = 'var(--user-color-offline)';
             element.title = 'offline';
           });
-          json.body.forEach(function (user) {
-            document.querySelectorAll('.user-status-' + user.id).forEach(function (element) {
-              element.style.color = 'var(--user-color-' + user.status + ')';
-              element.title = user.status;
-              element.title += '\nLast Seen: ' + formatDate(user.date);
+          if(json.body) {
+            json.body.forEach(function (user) {
+              document.querySelectorAll('.user-status-' + user.id).forEach(function (element) {
+                element.style.color = 'var(--user-color-' + user.status + ')';
+                element.title = user.status;
+                element.title += '\nLast Seen: ' + formatDate(user.date);
+              });
             });
-          });
+          }
           resetBackgroundTimeout(10000);
         }
       }
@@ -105,19 +107,25 @@ class App extends React.Component {
 
   toggleLeftMenu() {
     const menu = document.querySelector('.left');
+    const center = document.querySelector('.center');
     if (menu.classList.contains('left-menu-open')) {
       menu.classList.remove('left-menu-open');
+      center.classList.add('left-menu-open');
     } else {
       menu.classList.add('left-menu-open');
+      center.classList.remove('left-menu-open');
     }
   }
 
   toggleRightMenu() {
     const menu = document.querySelector('.right');
+    const center = document.querySelector('.center');
     if (menu.classList.contains('right-menu-open')) {
       menu.classList.remove('right-menu-open');
+      center.classList.add('right-menu-open');
     } else {
       menu.classList.add('right-menu-open');
+      center.classList.remove('right-menu-open');
     }
   }
 
