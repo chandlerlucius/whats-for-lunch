@@ -226,7 +226,12 @@ func findDocuments(collectionName string) *mongo.Cursor {
 	findOptions := options.Find()
 	filter := bson.M{}
 	if collectionName == "chat" {
-		findOptions.SetLimit(100)
+		filter = bson.M{
+			"date": bson.M{
+				"$gt": time.Now().Add(-12 * time.Hour),
+				"$lt": time.Now().Add(12 * time.Hour),
+			},
+		}
 		findOptions.SetSort(bson.M{"date": -1})
 	} else if collectionName == "location" {
 		filter = bson.M{
