@@ -184,7 +184,7 @@ const resetBackgroundTimeout = function (timeout) {
 }
 
 const backgroundWebsocket = function () {
-  const map = { 'type': 'background', "active": !document.hidden };
+  const map = { 'type': 'background', "active": document.hasFocus() };
   sendWebsocketMessage(map);
 }
 
@@ -229,7 +229,7 @@ export const renderToast = function (message, color) {
 }
 
 export const highlightNewData = function(newData, oldData) {
-  if (document.hidden && newData) {
+  if (!document.hasFocus() && newData) {
     let newDataArray;
     if(oldData) {
       newDataArray = newData.filter(comparer(oldData));
@@ -245,13 +245,11 @@ export const highlightNewData = function(newData, oldData) {
 }
 
 const addShowUpdateEventListener = function (element) {
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') {
+  window.addEventListener('focus', function () {
       element.style.background = 'var(--update-color)';
       setTimeout(function () {
         element.style.background = '';
       }, 3000);
-    }
   }, { once: true });
 }
 
