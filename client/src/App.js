@@ -73,6 +73,9 @@ class App extends React.Component {
           if (json.title === 'chat') {
             document.querySelector('.chat-textarea').value = '';
           }
+          if (json.title === 'location') {
+            document.querySelector('.location-add').value = '';
+          }
           renderToast(json.body, "var(--success-color)")
         } else if (json.status !== undefined) {
           renderToast(json.body, "var(--failure-color)")
@@ -223,6 +226,41 @@ export const formatDate = function (date) {
 
 export const renderToast = function (message, color) {
   ReactDOM.render(<Toast message={message} color={color} />, document.querySelector('.toast-container'));
+}
+
+export const highlightNewData = function(newData, oldData) {
+  if (document.hidden && newData) {
+    let newDataArray;
+    if(oldData) {
+      newDataArray = newData.filter(comparer(oldData));
+    } else {
+      newDataArray = newData;
+    }
+    newDataArray.forEach(function(location) {
+      document.querySelectorAll('.id-' + location._id).forEach(function (element) {
+        addShowUpdateEventListener(element);
+      });
+    });
+  }
+}
+
+const addShowUpdateEventListener = function (element) {
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') {
+      element.style.background = 'var(--update-color)';
+      setTimeout(function () {
+        element.style.background = '';
+      }, 3000);
+    }
+  }, { once: true });
+}
+
+const comparer = function(otherArray) {
+  return function (current) {
+    return otherArray.filter(function (other) {
+      return other._id === current._id
+    }).length === 0;
+  }
 }
 
 export default App;
