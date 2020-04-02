@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDate } from './App';
+import { formatDate, highlightNewData } from './App';
 
 class Chat extends React.Component {
   scrollToBottomOfChat() {
@@ -11,15 +11,16 @@ class Chat extends React.Component {
     this.scrollToBottomOfChat();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     const audio = new Audio('aimrcv.wav');
     audio.play();
+    highlightNewData(this.props.messages, prevProps.messages);
   }
 
   render() {
     return (
       this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
-        <div key={index} className="chat-inner-container">
+        <div key={index} className={"chat-inner-container update-field id-" + message._id}>
           <div className="chat-icon-container">
             <h3 className="chat-icon" style={{ background: "var(--user-color-" + (message.user_count % 11) + ")" }}>
               {message.user_name.toUpperCase().charAt(0)}
