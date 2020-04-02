@@ -110,6 +110,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 			insertDocument(c, bytes, chatMessage, "chat")
 		} else if websocketMessage.Type == "location" {
 			location := &Location{}
+			location.ID = primitive.NewObjectID()
 			location.Date = time.Now()
 			location.User = claims.User.ID
 			location.VoteCount = 0
@@ -222,16 +223,22 @@ func findDocuments(collectionName string) *mongo.Cursor {
 	defer cancel()
 
 	findOptions := options.Find()
+	filter := bson.M{}
 	if collectionName == "chat" {
 		findOptions.SetLimit(100)
 		findOptions.SetSort(bson.M{"date": -1})
 	} else if collectionName == "location" {
-		findOptions.SetLimit(5)
+		filter = bson.M{
+			"date": bson.M{
+				"$gt": time.Now().Add(-12 * time.Hour),
+				"$lt": time.Now().Add(12 * time.Hour),
+			},
+		}
 		findOptions.SetSort(bson.M{"vote_count": -1})
 	}
 
 	collection := mongoClient.Database(database).Collection(collectionName)
-	cur, err := collection.Find(ctx, bson.D{}, findOptions)
+	cur, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		log.Print(err)
 	}
@@ -475,6 +482,7 @@ type Vote struct {
 
 // Location is used to identify the values of a location
 type Location struct {
+	ID               primitive.ObjectID `bson:"_id, omitempty"`
 	Date             time.Time          `json:"date"`
 	User             primitive.ObjectID `json:"user"`
 	Name             string             `json:"name"`
