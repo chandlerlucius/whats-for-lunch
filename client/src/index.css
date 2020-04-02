@@ -22,6 +22,8 @@
   --user-color-active: var(--success-color);
   --user-color-offline: var(--secondary-color);
   --user-color-away: #ffd21f;
+  
+  --update-color: rgba(255, 179, 0, 1);
 }
 
 body {
@@ -206,6 +208,8 @@ nav,
 .vote-form,
 .search-form {
   display: flex;
+  border-radius: 5px;
+  transition: background 3s;
 }
 
 .vote-form>div:first-child,
