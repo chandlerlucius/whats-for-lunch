@@ -143,6 +143,12 @@ a:hover {
   text-decoration: underline;
 }
 
+.update-field {
+  border-radius: 5px;
+  margin: 1px 0 1px 0;
+  transition: background 3s;
+}
+
 .input-container {
   width: 65%;
   margin: auto;
@@ -208,8 +214,6 @@ nav,
 .vote-form,
 .search-form {
   display: flex;
-  border-radius: 5px;
-  transition: background 3s;
 }
 
 .vote-form>div:first-child,
@@ -341,6 +345,7 @@ nav,
 }
 
 .chat-container {
+  height: 100%;
   cursor: text;
   padding: 5px;
   overflow: auto;
@@ -355,7 +360,7 @@ nav,
 
 .chat-status {
   margin-right: 10px;
-  color: var(--secondary-color);
+  color: var(--user-color-active);
 }
 
 .chat-date {
