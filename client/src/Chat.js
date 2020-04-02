@@ -1,10 +1,13 @@
 import React from 'react'
 import { formatDate, highlightNewData } from './App';
 
+let container;
+let isScrolledToBottom;
 class Chat extends React.Component {
   scrollToBottomOfChat() {
-    const container = document.querySelector('.chat-container');
-    container.scrollTop = container.scrollHeight;
+    if (isScrolledToBottom) {
+      container.scrollTop = container.scrollHeight - container.clientHeight;
+    }
   }
 
   componentDidMount() {
@@ -14,10 +17,13 @@ class Chat extends React.Component {
   componentDidUpdate(prevProps) {
     const audio = new Audio('aimrcv.wav');
     audio.play();
+    this.scrollToBottomOfChat();
     highlightNewData(this.props.messages, prevProps.messages);
   }
 
   render() {
+    container = document.querySelector('.chat-container');
+    isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
     return (
       this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
         <div key={index} className={"chat-inner-container update-field id-" + message._id}>
