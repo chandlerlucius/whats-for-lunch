@@ -107,6 +107,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 			chatMessage := &ChatMessage{}
 			chatMessage.Date = time.Now()
 			chatMessage.User = claims.User.ID
+			chatMessage.ID = primitive.NewObjectID()
 			insertDocument(c, bytes, chatMessage, "chat")
 		} else if websocketMessage.Type == "location" {
 			location := &Location{}
@@ -466,6 +467,7 @@ type WebsocketMessage struct {
 
 // ChatMessage is used to identify a chat message
 type ChatMessage struct {
+	ID      primitive.ObjectID `bson:"_id, omitempty"`
 	Date    time.Time          `json:"date"`
 	User    primitive.ObjectID `json:"user"`
 	Message string             `json:"message"`
