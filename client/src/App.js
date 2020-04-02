@@ -95,7 +95,7 @@ class App extends React.Component {
             json.body.forEach(function (user) {
               document.querySelectorAll('.user-status-' + user.id).forEach(function (element) {
                 element.style.color = 'var(--user-color-' + user.status + ')';
-                element.title = user.status;
+                element.title = '● ' + user.status.charAt(0).toUpperCase() + user.status.slice(1);
                 element.title += '\nLast Seen: ' + formatDate(user.date);
               });
             });
@@ -258,7 +258,11 @@ const addShowUpdateEventListener = function (element) {
 const comparer = function(otherArray) {
   return function (current) {
     return otherArray.filter(function (other) {
-      return other._id === current._id
+      let votes = true;
+      if(other.vote_count !== undefined && current.vote_count !== undefined) {
+        votes = other.vote_count === current.vote_count; 
+      }
+      return other._id === current._id && votes
     }).length === 0;
   }
 }
