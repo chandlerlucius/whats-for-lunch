@@ -113,7 +113,7 @@ class Details extends React.Component {
         </div>,
         <div key="welcome-message-3" className="details-welcome-div welcome-message-3" style={messageThreeStyle}>
           <h3>🡠</h3>
-          <h3>Click a listing in the table to see its details!</h3>
+          <h3>Click a listing in the table or a marker on the map to see its details!</h3>
         </div>
       ]
     }
