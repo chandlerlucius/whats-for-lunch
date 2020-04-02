@@ -1,32 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Details from './Details'
-import { submitFormAsJson, formatDate } from './App'
+import { submitFormAsJson, formatDate, highlightNewData } from './App'
 
 class Suggestions extends React.Component {
 
   componentDidUpdate(prevProps) {
-    if (document.hidden && this.props.locations) {
-      let addedLocations;
-      if(prevProps.locations) {
-        addedLocations = this.props.locations.filter(this.comparer(prevProps.locations));
-      } else {
-        addedLocations = this.props.locations;
-      }
-      addedLocations.map((location) => {
-        document.querySelectorAll('.id_' + location._id).forEach(function (element) {
-          addShowUpdateEventListener(element);
-        });
-      });
-    }
-  }
-
-  comparer(otherArray) {
-    return function (current) {
-      return otherArray.filter(function (other) {
-        return other._id == current._id
-      }).length == 0;
-    }
+    highlightNewData(this.props.locations, prevProps.locations);
   }
 
   submitForm(event) {
@@ -73,7 +53,7 @@ class Suggestions extends React.Component {
   render() {
     return (
       this.props.locations && this.props.locations.map((location, index) =>
-        <form key={index} action="vote" className={"vote-form id_" + location._id}>
+        <form key={index} action="vote" className={"vote-form update-field id-" + location._id}>
           <div>
             {index === 0 ?
               <h1 className="vote-checkmark" title="Lunch is here!">✔</h1>
@@ -104,17 +84,6 @@ class Suggestions extends React.Component {
       )
     )
   }
-}
-
-const addShowUpdateEventListener = function (element) {
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') {
-      element.style.background = 'var(--update-color)';
-      setTimeout(function () {
-        element.style.background = '';
-      }, 3000);
-    }
-  }, { once: true });
 }
 
 export default Suggestions;
