@@ -24,6 +24,7 @@ let logoutTimeout;
 let backgroundTimeout;
 class App extends React.Component {
   componentDidMount() {
+    Notification.requestPermission();
     ReactDOM.render(<Search />, document.querySelector('.search-container'));
     ReactDOM.render(<Map />, document.querySelector('.map-container'));
 
@@ -83,15 +84,15 @@ class App extends React.Component {
           ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
         } else if (json.type === 'location') {
           ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
-          if(!document.querySelector('.details-div')) {
-            ReactDOM.render(<Details/>, document.querySelector('.details-container'));
+          if (!document.querySelector('.details-div')) {
+            ReactDOM.render(<Details />, document.querySelector('.details-container'));
           }
         } else if (json.type === 'background') {
           document.querySelectorAll('.chat-status').forEach(function (element) {
             element.style.color = 'var(--user-color-offline)';
             element.title = 'offline';
           });
-          if(json.body) {
+          if (json.body) {
             json.body.forEach(function (user) {
               document.querySelectorAll('.user-status-' + user.id).forEach(function (element) {
                 element.style.color = 'var(--user-color-' + user.status + ')';
@@ -228,40 +229,52 @@ export const renderToast = function (message, color) {
   ReactDOM.render(<Toast message={message} color={color} />, document.querySelector('.toast-container'));
 }
 
-export const highlightNewData = function(newData, oldData) {
+export const highlightNewData = function (newData, oldData) {
   if (!document.hasFocus() && newData) {
     let newDataArray;
-    if(oldData) {
+    if (oldData) {
       newDataArray = newData.filter(comparer(oldData));
     } else {
       newDataArray = newData;
     }
-    newDataArray.forEach(function(location) {
-      document.querySelectorAll('.id-' + location._id).forEach(function (element) {
-        addShowUpdateEventListener(element);
-      });
+    newDataArray.forEach(function (data) {
+      if (data.message) {
+        showNotification(data.user_name, data.message);
+      } else if(data.name) {
+        showNotification(data.user_name, data.name + ' was added or had a change in votes!');
+      }
+      const audio = new Audio('aimrcv.wav');
+      audio.play();
+
+      window.addEventListener('focus', function () {
+        document.querySelectorAll('.id-' + data._id).forEach(function (element) {
+          element.style.background = 'var(--update-color)';
+          setTimeout(function () {
+            element.style.background = '';
+          }, 3000);
+        });
+      }, { once: true });
     });
   }
 }
 
-const addShowUpdateEventListener = function (element) {
-  window.addEventListener('focus', function () {
-      element.style.background = 'var(--update-color)';
-      setTimeout(function () {
-        element.style.background = '';
-      }, 3000);
-  }, { once: true });
-}
-
-const comparer = function(otherArray) {
+const comparer = function (otherArray) {
   return function (current) {
     return otherArray.filter(function (other) {
       let votes = true;
-      if(other.vote_count !== undefined && current.vote_count !== undefined) {
-        votes = other.vote_count === current.vote_count; 
+      if (other.vote_count !== undefined && current.vote_count !== undefined) {
+        votes = other.vote_count === current.vote_count;
       }
       return other._id === current._id && votes
     }).length === 0;
+  }
+}
+
+const showNotification = function (title, body) {
+  if (("Notification" in window) && Notification.permission === "granted") {
+    new Notification(title, { body: body });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission();
   }
 }
 
