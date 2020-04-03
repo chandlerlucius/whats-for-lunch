@@ -58,7 +58,7 @@ class Details extends React.Component {
               }
               <h2 key="detail-name">{this.props.place.name}</h2>
               <RestaurantDetails place={this.props.place} />
-              <div key="detail-address" className="detail-item">
+              <div key="detail-address" className="detail-item flex">
                 <img className="detail-icon" alt="Address" src="//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png" />
                 <a className="address" target="_blank" rel="noopener noreferrer" href={this.props.place.url}>{this.props.place.formatted_address}</a>
               </div>
@@ -103,15 +103,15 @@ class Details extends React.Component {
         messageThreeStyle.display = '';
       }
       return [
-        <div key="welcome-message-1" className="details-welcome-div welcome-message-1" style={messageOneStyle}>
+        <div key="welcome-message-1" className="details-welcome-div flex welcome-message-1" style={messageOneStyle}>
           <h3>🡠</h3>
           <h3>Vote for your preferred restaurant with the up and down arrows!</h3>
         </div>,
-        <div key="welcome-message-2" className="details-welcome-div welcome-message-2">
+        <div key="welcome-message-2" className="details-welcome-div flex welcome-message-2">
           <h3>🡠</h3>
           <h3>Add a new restaurant or search for one!</h3>
         </div>,
-        <div key="welcome-message-3" className="details-welcome-div welcome-message-3" style={messageThreeStyle}>
+        <div key="welcome-message-3" className="details-welcome-div flex welcome-message-3" style={messageThreeStyle}>
           <h3>🡠</h3>
           <h3>Click a listing in the table or a marker on the map to see its details!</h3>
         </div>

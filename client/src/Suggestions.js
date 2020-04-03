@@ -53,7 +53,7 @@ class Suggestions extends React.Component {
   render() {
     return (
       this.props.locations && this.props.locations.map((location, index) =>
-        <form key={index} action="vote" className={"vote-form update-field id-" + location._id}>
+        <form key={index} action="vote" className={"vote-form flex update-field id-" + location._id}>
           <div>
             {index === 0 ?
               <h1 className="vote-checkmark" title="Lunch is here!">✔</h1>
@@ -63,7 +63,7 @@ class Suggestions extends React.Component {
             <h2 title="Click to add or remove up vote" onClick={this.submitForm} value="up" style={this.getArrowStyle(location, "up")}>
               ▲
             </h2>
-            <div className="vote-count" style={this.getCountStyle(location)}>
+            <div className="vote-count flex" style={this.getCountStyle(location)}>
               <h3 title={this.getTitle(location)} onClick={() => this.renderDetails(location)}>{location.vote_count}</h3>
             </div>
             <h2 title="Click to add or remove down vote" onClick={this.submitForm} value="down" style={this.getArrowStyle(location, "down")}>

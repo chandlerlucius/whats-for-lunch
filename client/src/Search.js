@@ -10,7 +10,7 @@ class Search extends React.Component {
   
   render() {
     return [
-      <form key="manual-location" className="search-form" method="POST" action="location" onSubmit={this.submitForm}>
+      <form key="manual-location" className="search-form flex" method="POST" action="location" onSubmit={this.submitForm}>
         <div>
           <input className="location-add" placeholder="Add restaurant manually" type="search" name="name"/>
         </div>
@@ -18,7 +18,7 @@ class Search extends React.Component {
           <button className="location-add-button">Add</button>
         </div>
       </form>,
-      <div key="google-location" className="search-form">
+      <div key="google-location" className="search-form flex">
         <div>
           <input className="location-search" placeholder="Search for restaurant or food type" type="search" />
         </div>

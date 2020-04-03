@@ -37,7 +37,6 @@ nav {
   width: 100%;
   height: 50px;
   position: fixed;
-  display: flex;
   justify-content: space-between;
   background: var(--primary-color);
 }
@@ -143,6 +142,10 @@ a:hover {
   text-decoration: underline;
 }
 
+.flex {
+  display: flex;
+}
+
 .update-field {
   border-radius: 5px;
   margin: 1px 0 1px 0;
@@ -172,7 +175,6 @@ a:hover {
 }
 
 .root {
-  display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
@@ -209,11 +211,6 @@ nav,
   margin-top: 50px;
   overflow: auto;
   transition: margin 1s;
-}
-
-.vote-form,
-.search-form {
-  display: flex;
 }
 
 .vote-form>div:first-child,
@@ -262,7 +259,6 @@ nav,
 }
 
 .vote-count {
-  display: flex;
   align-items: center;
   justify-content: center;
   width: 30px;
@@ -276,7 +272,6 @@ nav,
 
 .map-container {
   height: 400px;
-  display: flex;
   margin-top: 20px;
   background: var(--menu-color);
 }
@@ -321,7 +316,6 @@ nav,
   z-index: 1;
   width: 25%;
   height: 100%;
-  display: flex;
   color: #FFFFFF;
   position: fixed;
   transition: margin 1s;
@@ -369,10 +363,6 @@ nav,
   font-size: .85em;
 }
 
-.chat-inner-container {
-  display: flex;
-}
-
 .chat-icon-container {
   float: left;
   margin: 5px 10px 0 0;
@@ -383,7 +373,6 @@ nav,
   height: 30px;
   justify-content: center;
   align-items: center;
-  display: flex;
   border-radius: 2px;
   color: var(--menu-color);
 }
@@ -407,10 +396,6 @@ nav,
   text-align: right;
 }
 
-.details-welcome-div {
-  display: flex;
-}
-
 .photo {
   width: 95%;
   height: 200px;
@@ -419,7 +404,6 @@ nav,
 }
 
 .detail-item {
-  display: flex;
   align-items: center;
 }
 
@@ -438,7 +422,6 @@ nav,
   bottom: 0;
   z-index: 1;
   opacity: 0.9;
-  display: flex;
   padding: 10px;
   position: fixed;
   text-align: center;

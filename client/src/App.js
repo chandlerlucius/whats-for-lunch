@@ -142,12 +142,12 @@ class App extends React.Component {
 
   render() {
     return [
-      <nav key="nav">
+      <nav key="nav" className="flex">
         <h2 className="toggle" onClick={this.toggleLeftMenu}>💬</h2>
         <h2>What's For Lunch?</h2>
         <h2 className="toggle" onClick={this.toggleRightMenu}>☰</h2>
       </nav>,
-      <div key="left" className="left left-menu-open">
+      <div key="left" className="left left-menu-open flex">
         <h2 className="close toggle" onClick={this.toggleLeftMenu}>🡠</h2>
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
@@ -158,13 +158,13 @@ class App extends React.Component {
       <div key="center" className="center">
         <div className="suggestions-container"></div>
         <div className="search-container"></div>
-        <div className="map-container"></div>
+        <div className="map-container flex"></div>
       </div>,
       <div key="right" className="right right-menu-open">
         <h2 className="close toggle" onClick={this.toggleRightMenu}>🡢</h2>
         <div className="details-container"></div>
       </div>,
-      <div key="toast" className="toast-container"></div>
+      <div key="toast" className="toast-container flex"></div>
     ]
   }
 }
