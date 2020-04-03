@@ -15,8 +15,6 @@ class Chat extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const audio = new Audio('aimrcv.wav');
-    audio.play();
     this.scrollToBottomOfChat();
     highlightNewData(this.props.messages, prevProps.messages);
   }
