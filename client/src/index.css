@@ -22,7 +22,7 @@
   --user-color-active: var(--success-color);
   --user-color-offline: var(--secondary-color);
   --user-color-away: #ffd21f;
-  
+
   --update-color: rgba(255, 179, 0, 1);
 }
 
@@ -334,7 +334,8 @@ nav,
   margin-left: -25%;
 }
 
-.left-menu-open {
+.left-menu-open,
+.center-menu-left {
   margin-left: 0;
 }
 
@@ -387,7 +388,8 @@ nav,
   margin-right: -25%;
 }
 
-.right-menu-open {
+.right-menu-open,
+.center-menu-right {
   margin-right: 0;
 }
 
@@ -435,4 +437,61 @@ nav,
   margin-left: 25px;
   color: #FFFFFF;
   cursor: pointer;
+}
+
+@media screen and (max-width: 1000px) {
+
+  .left,
+  .right {
+    width: 45%;
+  }
+
+  .center {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .left {
+    margin-left: -45%;
+  }
+
+  .right {
+    margin-right: -45%;
+  }
+
+  .left-menu-open {
+    margin-left: 0;
+  }
+
+  .right-menu-open {
+    margin-right: 0;
+  }
+}
+
+@media screen and (max-width: 600px) {
+
+  .left,
+  .right {
+    width: 75%;
+  }
+
+  .left {
+    margin-left: -75%;
+  }
+
+  .right {
+    margin-right: -75%;
+  }
+
+  .left-menu-open {
+    margin-left: 0;
+  }
+
+  .left-menu-open ~ .right {
+    margin-right: -75%;
+  }
+
+  .right-menu-open {
+    margin-right: 0;
+  }
 }
