@@ -331,10 +331,12 @@ nav,
 
 .left {
   left: 0;
+}
+
+.left-menu-toggled{
   margin-left: -25%;
 }
 
-.left-menu-open,
 .center-menu-left {
   margin-left: 0;
 }
@@ -385,10 +387,12 @@ nav,
 
 .right {
   right: 0;
+}
+
+.right-menu-toggled {
   margin-right: -25%;
 }
 
-.right-menu-open,
 .center-menu-right {
   margin-right: 0;
 }
@@ -439,6 +443,16 @@ nav,
   cursor: pointer;
 }
 
+.overlay {
+  top: 0;
+  width: 0;
+  height: 100%;
+  opacity: 0.5;
+  position: fixed;
+  background: #000;
+  transition: all 1s;
+}
+
 @media screen and (max-width: 1000px) {
 
   .left,
@@ -446,25 +460,29 @@ nav,
     width: 45%;
   }
 
+  .left{
+    margin-left: -45%;
+  }
+
+  .right{
+    margin-right: -45%;
+  }
+
   .center {
     margin-left: 0;
     margin-right: 0;
   }
 
-  .left {
-    margin-left: -45%;
-  }
-
-  .right {
-    margin-right: -45%;
-  }
-
-  .left-menu-open {
+  .left-menu-toggled {
     margin-left: 0;
   }
 
-  .right-menu-open {
+  .right-menu-toggled {
     margin-right: 0;
+  }
+
+  .overlay-toggled {
+    width: 100%;
   }
 }
 
@@ -475,23 +493,19 @@ nav,
     width: 75%;
   }
 
-  .left {
+  .left{
     margin-left: -75%;
   }
 
-  .right {
+  .right{
     margin-right: -75%;
   }
 
-  .left-menu-open {
+  .left-menu-toggled {
     margin-left: 0;
   }
 
-  .left-menu-open ~ .right {
-    margin-right: -75%;
-  }
-
-  .right-menu-open {
+  .right-menu-toggled {
     margin-right: 0;
   }
 }
