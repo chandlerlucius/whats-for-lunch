@@ -114,10 +114,10 @@ class App extends React.Component {
     const center = document.querySelector('.center');
     if (menu.classList.contains('left-menu-open')) {
       menu.classList.remove('left-menu-open');
-      center.classList.add('left-menu-open');
+      center.classList.add('center-menu-left');
     } else {
       menu.classList.add('left-menu-open');
-      center.classList.remove('left-menu-open');
+      center.classList.remove('center-menu-left');
     }
   }
 
@@ -126,10 +126,10 @@ class App extends React.Component {
     const center = document.querySelector('.center');
     if (menu.classList.contains('right-menu-open')) {
       menu.classList.remove('right-menu-open');
-      center.classList.add('right-menu-open');
+      center.classList.add('center-menu-right');
     } else {
       menu.classList.add('right-menu-open');
-      center.classList.remove('right-menu-open');
+      center.classList.remove('center-menu-right');
     }
   }
 
@@ -148,7 +148,7 @@ class App extends React.Component {
         <h2>What's For Lunch?</h2>
         <h2 className="toggle" onClick={this.toggleRightMenu}>☰</h2>
       </nav>,
-      <div key="left" className="left left-menu-open flex">
+      <div key="left" className="left flex">
         <h2 className="close toggle" onClick={this.toggleLeftMenu}>🡠</h2>
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
@@ -161,7 +161,7 @@ class App extends React.Component {
         <div className="search-container"></div>
         <div className="map-container flex"></div>
       </div>,
-      <div key="right" className="right right-menu-open">
+      <div key="right" className="right">
         <h2 className="close toggle" onClick={this.toggleRightMenu}>🡢</h2>
         <div className="details-container"></div>
       </div>,
