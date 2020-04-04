@@ -112,24 +112,47 @@ class App extends React.Component {
   toggleLeftMenu() {
     const menu = document.querySelector('.left');
     const center = document.querySelector('.center');
-    if (menu.classList.contains('left-menu-open')) {
-      menu.classList.remove('left-menu-open');
-      center.classList.add('center-menu-left');
-    } else {
-      menu.classList.add('left-menu-open');
+    const overlay = document.querySelector('.overlay');
+    if (menu.classList.contains('left-menu-toggled')) {
+      menu.classList.remove('left-menu-toggled');
       center.classList.remove('center-menu-left');
+      overlay.classList.remove('overlay-toggled');
+    } else {
+      menu.classList.add('left-menu-toggled');
+      center.classList.add('center-menu-left');
+      overlay.classList.add('overlay-toggled');
     }
   }
 
   toggleRightMenu() {
     const menu = document.querySelector('.right');
     const center = document.querySelector('.center');
-    if (menu.classList.contains('right-menu-open')) {
-      menu.classList.remove('right-menu-open');
-      center.classList.add('center-menu-right');
-    } else {
-      menu.classList.add('right-menu-open');
+    const overlay = document.querySelector('.overlay');
+    if (menu.classList.contains('right-menu-toggled')) {
+      menu.classList.remove('right-menu-toggled');
       center.classList.remove('center-menu-right');
+      overlay.classList.remove('overlay-toggled');
+    } else {
+      menu.classList.add('right-menu-toggled');
+      center.classList.add('center-menu-right');
+      overlay.classList.add('overlay-toggled');
+    }
+  }
+
+  closeMenu() {
+    const center = document.querySelector('.center');
+    const overlay = document.querySelector('.overlay');
+    const left = document.querySelector('.left');
+    if (left.classList.contains('left-menu-toggled')) {
+      left.classList.remove('left-menu-toggled');
+      center.classList.remove('center-menu-left');
+      overlay.classList.remove('overlay-toggled');
+    }
+    const right = document.querySelector('.right');
+    if (right.classList.contains('right-menu-toggled')) {
+      right.classList.remove('right-menu-toggled');
+      center.classList.remove('center-menu-right');
+      overlay.classList.remove('overlay-toggled');
     }
   }
 
@@ -165,7 +188,8 @@ class App extends React.Component {
         <h2 className="close toggle" onClick={this.toggleRightMenu}>🡢</h2>
         <div className="details-container"></div>
       </div>,
-      <div key="toast" className="toast-container flex"></div>
+      <div key="toast" className="toast-container flex"></div>,
+      <div key="overlay" className="overlay" onClick={this.closeMenu}></div>
     ]
   }
 }
