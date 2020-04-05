@@ -30,7 +30,7 @@ class Chat extends React.Component {
               {message.user_name.toUpperCase().charAt(0)}
             </h3>
           </div>
-          <div>
+          <div className="chat-message">
             <strong className={"chat-status user-status-" + message.user_id} title={"offline"}>
               ●
             </strong>
@@ -40,7 +40,7 @@ class Chat extends React.Component {
             <i className="chat-date">
               {formatDate(message.date)}
             </i>
-            <div className="chat-message">
+            <div>
               {message.message}
             </div>
           </div>
