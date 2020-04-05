@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Details from './Details'
+import { MdCheck } from 'react-icons/md'
+import { MdClose } from 'react-icons/md'
 import { submitFormAsJson, formatDate, highlightNewData } from './App'
 
 class Suggestions extends React.Component {
@@ -56,9 +58,9 @@ class Suggestions extends React.Component {
         <form key={index} action="vote" className={"vote-form flex update-field id-" + location._id}>
           <div>
             {index === 0 ?
-              <h1 className="vote-checkmark" title="Lunch is here!">✔</h1>
+              <h1 className="vote-checkmark" title="Lunch is here!"><MdCheck /></h1>
               :
-              <h1 style={{ color: "transparent" }}>✔</h1>
+              <h1 style={{ color: "transparent" }}><MdCheck /></h1>
             }
             <h2 title="Click to add or remove up vote" onClick={this.submitForm} value="up" style={this.getArrowStyle(location, "up")}>
               ▲
@@ -73,7 +75,7 @@ class Suggestions extends React.Component {
           <div>
             <h3 onClick={() => this.renderDetails(location)}>{location.name}</h3>
             {location.added ?
-              <h1 className="vote-remove" title="Click to remove location" onClick={this.submitForm} value="remove">✗</h1>
+              <h1 className="vote-remove" title="Click to remove location" onClick={this.submitForm} value="remove"><MdClose /></h1>
               :
               ""
             }
