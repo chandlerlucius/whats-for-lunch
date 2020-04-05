@@ -170,7 +170,7 @@ class App extends React.Component {
 
   render() {
     return [
-      <nav key="nav" className="flex">
+      <nav key="nav" className="flex-center-vertical">
         <h2 className="button" onClick={this.toggleLeftMenu} title="Open Chat"><MdChat /></h2>
         <h2>What's For Lunch?</h2>
         <div className="flex">
@@ -200,7 +200,7 @@ class App extends React.Component {
         </div>
         <div className="details-container"></div>
       </div>,
-      <div key="toast" className="toast-container flex"></div>,
+      <div key="toast" className="toast-container flex-center"></div>,
       <div key="overlay" className="overlay" onClick={this.closeMenu}></div>
     ]
   }

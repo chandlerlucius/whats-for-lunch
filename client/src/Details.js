@@ -49,7 +49,7 @@ class Details extends React.Component {
               }
               <h2 key="detail-name">{this.props.place.name}</h2>
               <RestaurantDetails place={this.props.place} />
-              <div key="detail-address" className="detail-item flex">
+              <div key="detail-address" className="flex-center-vertical">
                 <img className="detail-icon" alt="Address" src="//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png" />
                 <a className="address" target="_blank" rel="noopener noreferrer" href={this.props.place.url}>{this.props.place.formatted_address}</a>
               </div>

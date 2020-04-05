@@ -29,13 +29,13 @@ class RestaurantDetails extends React.Component {
     }
 
     return [
-      <div key="ratings-container" className="detail-item">
+      <div key="ratings-container" className="flex-center-vertical">
         {this.props.place.rating}
         {stars[0]}{stars[1]}{stars[2]}{stars[3]}{stars[4]}
         ({this.props.place.user_ratings_total})
           • {price}
       </div>,
-      <div key="website-container" className="detail-item">
+      <div key="website-container" className="flex-center-vertical">
         <img className="detail-icon" alt="Website" src="https://www.gstatic.com/images/icons/material/system_gm/2x/public_gm_blue_24dp.png" />
         <a className="website" target="_blank" rel="noopener noreferrer" href={this.props.place.website}>{url}</a>
       </div>

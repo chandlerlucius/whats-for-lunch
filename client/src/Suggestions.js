@@ -65,7 +65,7 @@ class Suggestions extends React.Component {
             <h2 title="Click to add or remove up vote" onClick={this.submitForm} value="up" style={this.getArrowStyle(location, "up")}>
               ▲
             </h2>
-            <div className="vote-count flex" style={this.getCountStyle(location)}>
+            <div className="vote-count flex-center" style={this.getCountStyle(location)}>
               <h3 title={this.getTitle(location)} onClick={() => this.renderDetails(location)}>{location.vote_count}</h3>
             </div>
             <h2 title="Click to add or remove down vote" onClick={this.submitForm} value="down" style={this.getArrowStyle(location, "down")}>

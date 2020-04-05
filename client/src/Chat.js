@@ -26,7 +26,7 @@ class Chat extends React.Component {
       this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
         <div key={index} className={"flex update-field id-" + message._id}>
           <div className="chat-icon-container">
-            <h3 className="chat-icon flex" style={{ background: "var(--user-color-" + (message.user_count % 11) + ")" }}>
+            <h3 className="chat-icon flex-center" style={{ background: "var(--user-color-" + (message.user_count % 11) + ")" }}>
               {message.user_name.toUpperCase().charAt(0)}
             </h3>
           </div>
