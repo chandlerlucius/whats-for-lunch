@@ -72,7 +72,6 @@ func handleConnection(c *websocket.Conn, userID string) {
 		if err1 != nil {
 			log.Print(err1)
 		}
-		log.Print("Message received from websocket. User: " + claims.User.Username + " | Message: " + websocketMessage.Type)
 
 		if websocketMessage.Type == "background" {
 			var results []bson.M
@@ -99,6 +98,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 				log.Print(err3)
 			}
 		} else {
+			log.Print("Message received from websocket. User: " + claims.User.Username + " | Message: " + websocketMessage.Type)
 			clientTokens[c] = token
 			clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 		}
@@ -395,6 +395,9 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 					return nil, "", errors.New(vote.Location + " not found!")
 				}
 				message := "You did not add this location so you cannot remove it!"
+				return nil, "", errors.New(message)
+			} else {
+				message := "You have chosen an invalid operation: '" + vote.Value + "'"
 				return nil, "", errors.New(message)
 			}
 		}
