@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { AiOutlineClose } from 'react-icons/ai'
 
 let toastCloseTimeout;
 
@@ -18,8 +18,8 @@ class Toast extends React.Component {
 		document.querySelector('.toast-container').style.marginBottom = '0';
 		toastCloseTimeout = setTimeout(this.clickToastX, 5000);
 		return [
-			<h3 key="toast-message" style={{color: this.props.color}}>{this.props.message}</h3>,
-			<h3 key="toast-close" className="toast-close" onClick={this.closeToast}>✕</h3>
+			<h3 key="toast-message" style={{ color: this.props.color }}>{this.props.message}</h3>,
+			<h3 key="toast-close" className="toast-close flex-center" onClick={this.closeToast}><AiOutlineClose /></h3>
 		]
 	}
 }
