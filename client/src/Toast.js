@@ -10,7 +10,7 @@ class Toast extends React.Component {
 	}
 
 	closeToast(event) {
-		event.target.parentNode.style.marginBottom = '';
+		event.currentTarget.parentNode.style.marginBottom = '';
 	}
 
 	render() {

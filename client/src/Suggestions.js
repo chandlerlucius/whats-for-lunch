@@ -12,8 +12,8 @@ class Suggestions extends React.Component {
   }
 
   submitForm(event) {
-    const value = event.target;
-    const form = event.target.closest('form');
+    const value = event.currentTarget;
+    const form = event.currentTarget.closest('form');
     const input = form.querySelector('[name="value"]');
     input.value = value.getAttribute('value');
     submitFormAsJson(form);
