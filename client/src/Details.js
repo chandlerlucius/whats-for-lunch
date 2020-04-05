@@ -1,6 +1,7 @@
 import React from 'react';
 import RestaurantDetails from './RestaurantDetails'
 import { submitFormAsJson } from './App'
+import { FaChevronLeft } from 'react-icons/fa'
 
 class Details extends React.Component {
   setMessagePositions() {
@@ -20,7 +21,7 @@ class Details extends React.Component {
 
   setInfoWindowStyle() {
     const infoWindow = document.querySelector('.gm-style-iw-d');
-    if(infoWindow) {
+    if (infoWindow) {
       infoWindow.style.overflow = 'hidden';
       document.querySelector('.gm-style-iw').style.background = 'var(--menu-color)';
     }
@@ -104,15 +105,15 @@ class Details extends React.Component {
       }
       return [
         <div key="welcome-message-1" className="details-welcome-div flex welcome-message-1" style={messageOneStyle}>
-          <h3>🡠</h3>
+          <h3><FaChevronLeft /></h3>
           <h3>Vote for your preferred restaurant with the up and down arrows!</h3>
         </div>,
         <div key="welcome-message-2" className="details-welcome-div flex welcome-message-2">
-          <h3>🡠</h3>
+          <h3><FaChevronLeft /></h3>
           <h3>Add a new restaurant or search for one!</h3>
         </div>,
         <div key="welcome-message-3" className="details-welcome-div flex welcome-message-3" style={messageThreeStyle}>
-          <h3>🡠</h3>
+          <h3><FaChevronLeft /></h3>
           <h3>Click a listing in the table or a marker on the map to see its details!</h3>
         </div>
       ]
