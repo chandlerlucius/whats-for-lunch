@@ -32,15 +32,6 @@ body {
   background-color: var(--secondary-color);
 }
 
-nav {
-  top: 0;
-  width: 100%;
-  height: 50px;
-  position: fixed;
-  justify-content: space-between;
-  background: var(--primary-color);
-}
-
 h2 {
   cursor: pointer;
 }
@@ -48,11 +39,6 @@ h2 {
 h2,
 h3 {
   margin: 0;
-}
-
-nav h2 {
-  padding: 10px;
-  cursor: pointer;
 }
 
 h1,
@@ -174,6 +160,17 @@ a:hover {
   color: var(--primary-color);
 }
 
+.button {
+  box-shadow: 0 0 0.5px #000000;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 10px 15px 10px 15px;
+  transition: background 0.5s;
+}
+
+.button:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 .root {
   justify-content: center;
   align-items: center;
@@ -196,9 +193,19 @@ a:hover {
   font-weight: bold;
 }
 
+nav {
+  top: 0;
+  width: 100%;
+  height: 50px;
+  position: fixed;
+  justify-content: space-between;
+  background: var(--primary-color);
+}
+
 nav,
 .right,
-.left {
+.left,
+.menu-button-div {
   box-shadow: 0 0 3px #000000;
   /* box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2); */
 }
@@ -233,6 +240,7 @@ nav,
 
 .vote-form h1 {
   margin: 0 20px 0 20px;
+  display: flex;
 }
 
 .vote-form h2,
@@ -323,17 +331,27 @@ nav,
   background: var(--menu-color);
 }
 
-.left>*,
+.chat-form,
+.chat-container,
 .details-div>div>*,
 .details-welcome-div>* {
   margin: 10px;
+}
+
+.menu-button-div {
+  justify-content: space-between;
+  background: rgba(0,0,0,0.1);
+}
+
+.left .menu-button-div {
+  justify-content: flex-end;
 }
 
 .left {
   left: 0;
 }
 
-.left-menu-toggled{
+.left-menu-toggled {
   margin-left: -25%;
 }
 
@@ -382,7 +400,8 @@ nav,
 
 .chat-message {
   padding-bottom: 10px;
-  white-space: pre;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .right {
@@ -395,11 +414,6 @@ nav,
 
 .center-menu-right {
   margin-right: 0;
-}
-
-.right .toggle {
-  margin: 10px;
-  text-align: right;
 }
 
 .photo {
@@ -460,11 +474,11 @@ nav,
     width: 45%;
   }
 
-  .left{
+  .left {
     margin-left: -45%;
   }
 
-  .right{
+  .right {
     margin-right: -45%;
   }
 
@@ -493,11 +507,11 @@ nav,
     width: 75%;
   }
 
-  .left{
+  .left {
     margin-left: -75%;
   }
 
-  .right{
+  .right {
     margin-right: -75%;
   }
 
