@@ -132,6 +132,17 @@ a:hover {
   display: flex;
 }
 
+.flex-center-vertical {
+  display: flex;
+  align-items: center;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .update-field {
   border-radius: 5px;
   margin: 1px 0 1px 0;
@@ -172,8 +183,6 @@ a:hover {
 }
 
 .root {
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
 }
 
@@ -233,8 +242,8 @@ nav,
 .vote-form>div,
 .search-form>div {
   width: 50%;
-  display: flex;
   margin: 5px;
+  display: flex;
   align-items: center;
 }
 
@@ -267,8 +276,6 @@ nav,
 }
 
 .vote-count {
-  align-items: center;
-  justify-content: center;
   width: 30px;
   border: 1px solid;
   border-radius: 5px;
@@ -404,8 +411,6 @@ nav,
 .chat-icon {
   width: 30px;
   height: 30px;
-  justify-content: center;
-  align-items: center;
   border-radius: 2px;
   color: var(--menu-color);
 }
@@ -435,10 +440,6 @@ nav,
   border-radius: 5px;
 }
 
-.detail-item {
-  align-items: center;
-}
-
 .star-icon {
   height: 14px;
   padding-left: 2px;
@@ -456,8 +457,6 @@ nav,
   opacity: 0.9;
   padding: 10px;
   position: fixed;
-  text-align: center;
-  align-items: center;
   margin-bottom: -10%;
   transition: all 0.5s;
   background: var(--secondary-color);
