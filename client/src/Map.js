@@ -40,7 +40,6 @@ class Map extends React.Component {
       infoWindow = new window.google.maps.InfoWindow({
         content: document.querySelector('.info-window-container')
       });
-      window.google.maps.event.addListenerOnce(infoWindow, 'domready', setInfoWindowStyle);
 
       places = new window.google.maps.places.PlacesService(map);
 
@@ -148,11 +147,6 @@ class Map extends React.Component {
           ReactDOM.render(<Details place={place} />, document.querySelector('.details-container'));
           ReactDOM.render(<Details place={place} window={true} />, document.querySelector('.info-window-container'));
         });
-    }
-
-    function setInfoWindowStyle() {
-      document.querySelector('.gm-style-iw-d').style.overflow = 'hidden';
-      document.querySelector('.gm-style-iw').style.background = 'var(--menu-color)';
     }
 
     initMap();
