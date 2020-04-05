@@ -17,6 +17,7 @@ var mongoClient, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://l
 var database = "lunch"
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	router := mux.NewRouter()
 	router.HandleFunc("/authenticate", authenticateHandler).Methods("POST")
 	router.HandleFunc("/login", loginHandler).Methods("POST")
