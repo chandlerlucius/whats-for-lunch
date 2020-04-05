@@ -8,6 +8,10 @@ import Login from './Login'
 import Search from './Search';
 import Details from './Details'
 import Suggestions from './Suggestions';
+import { MdChat } from 'react-icons/md';
+import { FiLogOut } from 'react-icons/fi';
+import { AiOutlineClose } from 'react-icons/ai';
+import { TiThMenuOutline } from 'react-icons/ti';
 
 let url;
 let socket;
@@ -167,12 +171,17 @@ class App extends React.Component {
   render() {
     return [
       <nav key="nav" className="flex">
-        <h2 className="toggle" onClick={this.toggleLeftMenu}>💬</h2>
+        <h2 className="button" onClick={this.toggleLeftMenu} title="Open Chat"><MdChat /></h2>
         <h2>What's For Lunch?</h2>
-        <h2 className="toggle" onClick={this.toggleRightMenu}>☰</h2>
+        <div className="flex">
+          <h2 className="button" onClick={this.toggleRightMenu} title="Open Menu"><TiThMenuOutline /></h2>
+          <h2 className="button" onClick={this.logout} title="Logout"><FiLogOut /></h2>
+        </div>
       </nav>,
       <div key="left" className="left flex">
-        <h2 className="close toggle" onClick={this.toggleLeftMenu}>🡠</h2>
+        <div className="flex menu-button-div">
+          <h2 className="button" onClick={this.toggleLeftMenu} title="Close Menu"><AiOutlineClose /></h2>
+        </div>
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
           <textarea name="message" className="chat-textarea" rows={4} required={true} placeholder="Send a message..." onKeyPress={this.submitWhenEnterPressed}></textarea>
@@ -185,7 +194,10 @@ class App extends React.Component {
         <div className="map-container flex"></div>
       </div>,
       <div key="right" className="right">
-        <h2 className="close toggle" onClick={this.toggleRightMenu}>🡢</h2>
+        <div className="flex menu-button-div">
+          <h2 className="button" onClick={this.toggleRightMenu} title="Close Menu"><AiOutlineClose /></h2>
+          <h2 className="button" onClick={this.logout} title="Logout"><FiLogOut /></h2>
+        </div>
         <div className="details-container"></div>
       </div>,
       <div key="toast" className="toast-container flex"></div>,
@@ -264,7 +276,7 @@ export const highlightNewData = function (newData, oldData) {
     newDataArray.forEach(function (data) {
       if (data.message) {
         showNotification(data.user_name, data.message);
-      } else if(data.name) {
+      } else if (data.name) {
         showNotification(data.user_name, data.name + ' was added or had a change in votes!');
       }
       const audio = new Audio('aimrcv.wav');
