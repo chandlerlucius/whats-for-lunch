@@ -23,17 +23,45 @@ class Login extends React.Component {
     const method = form.method;
     const action = form.action.replace('3000', '9000');
     event.preventDefault();
-    react.setState({
-      message: '\u200b',
-    });
+    let messageTimeout = setTimeout(function() {
+      react.setState({
+        message: '•',
+        color: ''
+      });
+    }, 0);
+    messageTimeout = setTimeout(function() {
+      react.setState({
+        message: '••',
+        color: ''
+      });
+    }, 1000);
+    messageTimeout = setTimeout(function() {
+      react.setState({
+        message: '•••',
+        color: ''
+      });
+    }, 2000);
+    messageTimeout = setTimeout(function() {
+      react.setState({
+        message: '••••',
+        color: ''
+      });
+    }, 3000);
+    messageTimeout = setTimeout(function() {
+      react.setState({
+        message: '•••••',
+        color: ''
+      });
+    }, 4000);
 
     const xhr = new XMLHttpRequest();
     xhr.open(method, action);
     xhr.onload = function () {
       if (xhr.readyState === 4) {
+        clearTimeout(messageTimeout);
         if (xhr.status === 200) {
           const json = JSON.parse(xhr.responseText);
-          localStorage.setItem("token", json.token)
+          localStorage.setItem("token", json.token);
           ReactDOM.render(<App timeout={json.timeout} />, document.querySelector('.root'));
         } else {
           const json = JSON.parse(xhr.responseText);
@@ -45,6 +73,7 @@ class Login extends React.Component {
       }
     }
     xhr.onerror = function () {
+      clearTimeout(messageTimeout);
       react.setState({
         message: 'Error connecting to server. Try again later.',
         color: 'var(--failure-color)'
