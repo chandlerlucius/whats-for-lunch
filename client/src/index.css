@@ -421,6 +421,13 @@ nav,
   word-break: break-word;
 }
 
+.new-messages-button {
+  bottom: 0;
+  display: none;
+  position: sticky;
+  white-space: pre;
+}
+
 .right {
   right: 0;
 }
