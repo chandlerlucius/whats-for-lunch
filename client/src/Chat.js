@@ -1,28 +1,41 @@
 import React from 'react'
-import { formatDate, highlightNewData } from './App';
+import {FaChevronDown} from 'react-icons/fa'
+import { formatDate, highlightNewData } from './App'
 
 let container;
 let isScrolledToBottom;
 class Chat extends React.Component {
-  scrollToBottomOfChat() {
+  keepScrollAtBottom() {
     if (isScrolledToBottom) {
-      container.scrollTop = container.scrollHeight - container.clientHeight;
+      this.scrollToBottom();
     }
   }
 
+  scrollToBottom() {
+    container.scrollTop = container.scrollHeight - container.clientHeight;
+  }
+
   componentDidMount() {
-    this.scrollToBottomOfChat();
+    this.keepScrollAtBottom();
+    container.addEventListener('scroll', function () {
+      if (container.scrollHeight - container.clientHeight <= container.scrollTop + 1) {
+        document.querySelector('.new-messages-button').style.display = 'none';
+      }
+  });
   }
 
   componentDidUpdate(prevProps) {
-    this.scrollToBottomOfChat();
-    highlightNewData(this.props.messages, prevProps.messages);
+    this.keepScrollAtBottom();
+    const newData = highlightNewData(this.props.messages, prevProps.messages);
+    if(newData && !isScrolledToBottom) {
+      document.querySelector('.new-messages-button').style.display = 'flex';
+    }
   }
 
   render() {
     container = document.querySelector('.chat-container');
     isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
-    return (
+    return [
       this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
         <div key={index} className={"flex update-field id-" + message._id}>
           <div className="chat-icon-container">
@@ -45,8 +58,11 @@ class Chat extends React.Component {
             </div>
           </div>
         </div>
-      )
-    )
+      ),
+      <div key="new-messages" className="flex-center new-messages-button" onClick={this.scrollToBottom}>
+        <button className="flex-center"><FaChevronDown/>    New Messages    <FaChevronDown/></button>
+      </div>
+    ]
   }
 }
 
