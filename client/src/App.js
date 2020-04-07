@@ -283,14 +283,24 @@ export const highlightNewData = function (newData, oldData) {
       audio.play();
 
       window.addEventListener('focus', function () {
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                  const element = entry.target;
+                  element.style.background = 'var(--update-color)';
+                  setTimeout(function () {
+                    element.style.background = '';
+                  }, 3000);
+                  observer.unobserve(entry.target);
+                }
+            });
+        });
         document.querySelectorAll('.id-' + data._id).forEach(function (element) {
-          element.style.background = 'var(--update-color)';
-          setTimeout(function () {
-            element.style.background = '';
-          }, 3000);
+          observer.observe(element);
         });
       }, { once: true });
     });
+    return newDataArray.length > 0;
   }
 }
 
