@@ -268,8 +268,10 @@ export const renderToast = function (message, color) {
 export const highlightNewData = function (newData, oldData) {
   if (!document.hasFocus() && newData) {
     let newDataArray;
+    let oldDataArray;
     if (oldData) {
-      newDataArray = newData.filter(comparer(oldData));
+      newDataArray = newData.filter(compareIDAndVote(oldData));
+      oldDataArray = oldData.filter(compareID(newData));
     } else {
       newDataArray = newData;
     }
@@ -281,6 +283,7 @@ export const highlightNewData = function (newData, oldData) {
       }
       const audio = new Audio('aimrcv.wav');
       audio.play();
+      updateTitle(1);
 
       window.addEventListener('focus', function () {
         const observer = new IntersectionObserver(function (entries) {
@@ -292,6 +295,7 @@ export const highlightNewData = function (newData, oldData) {
                     element.style.background = '';
                   }, 3000);
                   observer.unobserve(entry.target);
+                  updateTitle(-1);
                 }
             });
         });
@@ -300,11 +304,31 @@ export const highlightNewData = function (newData, oldData) {
         });
       }, { once: true });
     });
+    oldDataArray.forEach(function (data) {
+      if (data.name) {
+        showNotification(data.user_name, data.name + ' was removed!');
+      }
+      const audio = new Audio('aimrcv.wav');
+      audio.play();
+      updateTitle(-1);
+    });
     return newDataArray.length > 0;
   }
 }
 
-const comparer = function (otherArray) {
+const updateTitle = function(increment) {
+  const regex = /\((\d+?)\) /;
+  const count = document.title.match(regex);
+  document.title = document.title.replace(regex, '');
+  if(count && count.length > 1 && count[1] !== 0) {
+    increment += parseInt(count[1]);
+  }
+  if(increment > 0) {
+    document.title = '(' + increment + ') ' + document.title;
+  }
+}
+
+const compareIDAndVote = function (otherArray) {
   return function (current) {
     return otherArray.filter(function (other) {
       let votes = true;
@@ -312,6 +336,14 @@ const comparer = function (otherArray) {
         votes = other.vote_count === current.vote_count;
       }
       return other._id === current._id && votes
+    }).length === 0;
+  }
+}
+
+const compareID = function (otherArray) {
+  return function (current) {
+    return otherArray.filter(function (other) {
+      return other._id === current._id
     }).length === 0;
   }
 }
