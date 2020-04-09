@@ -1,6 +1,6 @@
 import React from 'react'
 import {FaChevronDown} from 'react-icons/fa'
-import { formatDate, highlightNewData } from './App'
+import { formatDate, highlightNewData, CHAT } from './App'
 
 let container;
 let isScrolledToBottom;
@@ -26,7 +26,7 @@ class Chat extends React.Component {
 
   componentDidUpdate(prevProps) {
     this.keepScrollAtBottom();
-    const newData = highlightNewData(this.props.messages, prevProps.messages);
+    const newData = highlightNewData(CHAT, this.props.messages, prevProps.messages);
     if(newData && !isScrolledToBottom) {
       document.querySelector('.new-messages-button').style.display = 'flex';
     }
