@@ -1,16 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import Map from './Map';
 import Chat from './Chat';
 import Toast from './Toast'
 import Login from './Login'
 import Search from './Search';
 import Details from './Details'
+import GoogleMap from './Map';
 import Suggestions from './Suggestions';
 import { MdChat } from 'react-icons/md';
 import { FiLogOut } from 'react-icons/fi';
-import { AiOutlineClose } from 'react-icons/ai';
+import { GiKnifeFork } from 'react-icons/gi';
 import { TiThMenuOutline } from 'react-icons/ti';
 
 let url;
@@ -30,7 +30,7 @@ class App extends React.Component {
   componentDidMount() {
     Notification.requestPermission();
     ReactDOM.render(<Search />, document.querySelector('.search-container'));
-    ReactDOM.render(<Map />, document.querySelector('.map-container'));
+    ReactDOM.render(<GoogleMap />, document.querySelector('.map-container'));
 
     const setSocketTimeout = function () {
       console.log('Socket closed. Attempting reconnect in 5 seconds.');
@@ -180,7 +180,7 @@ class App extends React.Component {
       </nav>,
       <div key="left" className="left flex">
         <div className="flex menu-button-div">
-          <h2 className="button" onClick={this.toggleLeftMenu} title="Close Menu"><AiOutlineClose /></h2>
+          <h2 className="button" onClick={this.toggleLeftMenu} title="Close Menu"><GiKnifeFork /></h2>
         </div>
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
@@ -195,7 +195,7 @@ class App extends React.Component {
       </div>,
       <div key="right" className="right">
         <div className="flex menu-button-div">
-          <h2 className="button" onClick={this.toggleRightMenu} title="Close Menu"><AiOutlineClose /></h2>
+          <h2 className="button" onClick={this.toggleRightMenu} title="Close Menu"><GiKnifeFork /></h2>
           <h2 className="button" onClick={this.logout} title="Logout"><FiLogOut /></h2>
         </div>
         <div className="details-container"></div>
@@ -205,6 +205,13 @@ class App extends React.Component {
     ]
   }
 }
+
+export const CHAT = 'chat';
+export const LOCATION = 'location';
+const ADD = 1;
+const REMOVE = 2;
+const CHANGE = 3;
+const notificationCounts = new Map();
 
 const resetLogoutTimeout = function (timeout) {
   clearTimeout(logoutTimeout);
@@ -265,77 +272,108 @@ export const renderToast = function (message, color) {
   ReactDOM.render(<Toast message={message} color={color} />, document.querySelector('.toast-container'));
 }
 
-export const highlightNewData = function (newData, oldData) {
-  if (!document.hasFocus() && newData) {
-    let newDataArray;
-    let oldDataArray;
-    if (oldData) {
-      newDataArray = newData.filter(compareIDAndVote(oldData));
+export const highlightNewData = function (type, newData, oldData) {
+  if (!document.hasFocus()) {
+    let newDataArray = [];
+    let oldDataArray = [];
+    let changedDataArray = [];
+    if (oldData && newData) {
+      newDataArray = newData.filter(compareID(oldData));
       oldDataArray = oldData.filter(compareID(newData));
-    } else {
+      changedDataArray = newData.filter(compareVote(oldData));
+    } else if (newData) {
       newDataArray = newData;
+    } else if (oldData) {
+      oldDataArray = oldData;
     }
-    newDataArray.forEach(function (data) {
-      if (data.message) {
-        showNotification(data.user_name, data.message);
-      } else if (data.name) {
-        showNotification(data.user_name, data.name + ' was added or had a change in votes!');
-      }
-      const audio = new Audio('aimrcv.wav');
-      audio.play();
-      updateTitle(1);
 
-      window.addEventListener('focus', function () {
-        const observer = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                  const element = entry.target;
-                  element.style.background = 'var(--update-color)';
-                  setTimeout(function () {
-                    element.style.background = '';
-                  }, 3000);
-                  observer.unobserve(entry.target);
-                  updateTitle(-1);
-                }
-            });
-        });
-        document.querySelectorAll('.id-' + data._id).forEach(function (element) {
-          observer.observe(element);
-        });
-      }, { once: true });
+    newDataArray.forEach(function (data) {
+      handleNotifications(type, data, ADD);
     });
     oldDataArray.forEach(function (data) {
-      if (data.name) {
-        showNotification(data.user_name, data.name + ' was removed!');
-      }
-      const audio = new Audio('aimrcv.wav');
-      audio.play();
-      updateTitle(-1);
+      handleNotifications(type, data, REMOVE);
+    });
+    changedDataArray.forEach(function (data) {
+      handleNotifications(type, data, CHANGE);
     });
     return newDataArray.length > 0;
   }
 }
 
-const updateTitle = function(increment) {
-  const regex = /\((\d+?)\) /;
-  const count = document.title.match(regex);
-  document.title = document.title.replace(regex, '');
-  if(count && count.length > 1 && count[1] !== 0) {
-    increment += parseInt(count[1]);
+const handleNotifications = function (type, data, operation) {
+  const count = notificationCounts.get(data._id);
+  switch (operation) {
+    case ADD:
+      notificationCounts.set(data._id, count ? count + 1 : 1);
+      if (type === CHAT) {
+        showNotification('New Message: \n@' + data.user_name, '"' + data.message + '"');
+      } else if (type === LOCATION) {
+        showNotification('New Location: \n' + data.name, '@' + data.user_name + ' added it!');
+      }
+      handleHighlighting(type, data);
+      break;
+    case REMOVE:
+      notificationCounts.delete(data._id);
+      if (type === LOCATION) {
+        showNotification('Removed Location: \n' + data.name, '@' + data.user_name + ' removed it!');
+      }
+      break;
+    case CHANGE:
+      notificationCounts.set(data._id, count ? count + 1 : 1);
+      if (type === LOCATION) {
+        showNotification('Updated Location: \n' + data.name, '@' + data.user_name + ' voted!');
+      }
+      handleHighlighting(type, data);
+      break;
+    default:
+      break;
   }
-  if(increment > 0) {
-    document.title = '(' + increment + ') ' + document.title;
+  updateTitle();
+  const audio = new Audio('aimrcv.wav');
+  audio.play();
+}
+
+const updateTitle = function () {
+  let count = 0;
+  notificationCounts.forEach(function (value) {
+    count += value;
+  });
+  document.title = document.title.replace(/\(\d+?\) /, '');
+  if (count > 0) {
+    document.title = '(' + count + ') ' + document.title;
   }
 }
 
-const compareIDAndVote = function (otherArray) {
+const handleHighlighting = function (type, data) {
+  window.addEventListener('focus', function () {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          const element = entry.target;
+          element.style.background = 'var(--update-color)';
+          setTimeout(function () {
+            element.style.background = '';
+          }, 3000);
+          observer.unobserve(entry.target);
+          notificationCounts.delete(data._id);
+          updateTitle();
+        }
+      });
+    });
+    document.querySelectorAll('.id-' + data._id).forEach(function (element) {
+      observer.observe(element);
+    });
+  }, { once: true });
+}
+
+const compareVote = function (otherArray) {
   return function (current) {
     return otherArray.filter(function (other) {
       let votes = true;
       if (other.vote_count !== undefined && current.vote_count !== undefined) {
         votes = other.vote_count === current.vote_count;
       }
-      return other._id === current._id && votes
+      return votes;
     }).length === 0;
   }
 }
@@ -350,7 +388,7 @@ const compareID = function (otherArray) {
 
 const showNotification = function (title, body) {
   if (("Notification" in window) && Notification.permission === "granted") {
-    new Notification(title, { body: body });
+    new Notification(title, { body: body, icon: document.location.href + 'location-icon.png' });
   } else if (Notification.permission !== "denied") {
     Notification.requestPermission();
   }
