@@ -387,6 +387,10 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 				}
 			} else if vote.Value == "remove" {
 				if vote.Location != "" && vote.User == document["user"] {
+					if len(document["up_votes"].(primitive.A)) > 0 {
+						message := "Someone has voted for this restaurant, you cannot remove it!"
+						return nil, "", errors.New(message)
+					}
 					res, err := deleteDocumentByName("location", vote.Location)
 					if res.DeletedCount == 1 {
 						response = "Successfully removed " + vote.Location + "!"
