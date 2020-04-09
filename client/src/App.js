@@ -306,22 +306,22 @@ const handleNotifications = function (type, data, operation) {
     case ADD:
       notificationCounts.set(data._id, count ? count + 1 : 1);
       if (type === CHAT) {
-        showNotification('New Message: \n@' + data.user_name, '"' + data.message + '"');
+        showNotification('New Message: \n@' + data.user_name, '"' + data.message + '"', 'chat-icon.png');
       } else if (type === LOCATION) {
-        showNotification('New Location: \n' + data.name, '@' + data.user_name + ' added it!');
+        showNotification('New Location: \n' + data.name, '@' + data.user_name + ' added it!', 'location-icon.png');
       }
       handleHighlighting(type, data);
       break;
     case REMOVE:
       notificationCounts.delete(data._id);
       if (type === LOCATION) {
-        showNotification('Removed Location: \n' + data.name, '@' + data.user_name + ' removed it!');
+        showNotification('Removed Location: \n' + data.name, '@' + data.user_name + ' removed it!', 'location-icon.png');
       }
       break;
     case CHANGE:
       notificationCounts.set(data._id, count ? count + 1 : 1);
       if (type === LOCATION) {
-        showNotification('Updated Location: \n' + data.name, '@' + data.user_name + ' voted!');
+        showNotification('Updated Location: \n' + data.name, '@' + data.user_name + ' voted!', 'location-icon.png');
       }
       handleHighlighting(type, data);
       break;
@@ -386,9 +386,12 @@ const compareID = function (otherArray) {
   }
 }
 
-const showNotification = function (title, body) {
+const showNotification = function (title, body, icon) {
   if (("Notification" in window) && Notification.permission === "granted") {
-    new Notification(title, { body: body, icon: document.location.href + 'location-icon.png' });
+    const notification = new Notification(title, { body: body, icon: document.location.href + icon });
+    notification.onclick = function () {
+      window.focus();
+    };
   } else if (Notification.permission !== "denied") {
     Notification.requestPermission();
   }
