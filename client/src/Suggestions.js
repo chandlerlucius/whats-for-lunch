@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom'
 import Details from './Details'
 import { MdCheck } from 'react-icons/md'
 import { MdClose } from 'react-icons/md'
-import { submitFormAsJson, formatDate, highlightNewData, LOCATION, toggleRightMenu } from './App'
+import { submitFormAsJson, formatDate, handleNewData, LOCATION, toggleRightMenu } from './App'
 
 class Suggestions extends React.Component {
 
   componentDidUpdate(prevProps) {
-    highlightNewData(LOCATION, this.props.locations, prevProps.locations);
+    handleNewData(LOCATION, this.props.locations, prevProps.locations);
   }
 
   submitForm(event) {
