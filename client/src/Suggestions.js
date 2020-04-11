@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import Details from './Details'
 import { MdCheck } from 'react-icons/md'
 import { MdClose } from 'react-icons/md'
-import { submitFormAsJson, formatDate, highlightNewData, LOCATION } from './App'
+import { submitFormAsJson, formatDate, highlightNewData, LOCATION, toggleRightMenu } from './App'
 
 class Suggestions extends React.Component {
 
@@ -50,6 +50,7 @@ class Suggestions extends React.Component {
 
   renderDetails(location) {
     ReactDOM.render(<Details place={location} />, document.querySelector('.details-container'));
+    toggleRightMenu();
   }
 
   render() {
