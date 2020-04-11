@@ -31,25 +31,25 @@ class Login extends React.Component {
     }, 0);
     const messageTimeout2 = setTimeout(function() {
       react.setState({
-        message: '●●',
+        message: '●  ●',
         color: ''
       });
     }, 500);
     const messageTimeout3 = setTimeout(function() {
       react.setState({
-        message: '●●●',
+        message: '●  ●  ●',
         color: ''
       });
     }, 1000);
     const messageTimeout4 = setTimeout(function() {
       react.setState({
-        message: '●●●●',
+        message: '●  ●  ●  ●',
         color: ''
       });
     }, 1500);
     const messageTimeout5 = setTimeout(function() {
       react.setState({
-        message: '●●●●●',
+        message: '●  ●  ●  ●  ●',
         color: ''
       });
     }, 2000);
@@ -102,7 +102,7 @@ class Login extends React.Component {
       <form method="POST" action="/login" className="login-form" onSubmit={this.onSubmit} onReset={this.onReset}>
         <h1>What's For Lunch?</h1>
         <div className="input-container">
-          <input name="username" type="text" placeholder=" " required={true} minLength="3" autoFocus={true}></input>
+          <input name="username" type="text" placeholder=" " required={true} minLength="3" autoFocus={true} autocorrect="off" autocapitalize="none"></input>
           <label htmlFor="username">Username</label>
           <span>Must have 3 or more characters</span>
         </div>
