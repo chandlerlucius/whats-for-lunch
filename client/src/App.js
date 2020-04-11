@@ -113,36 +113,6 @@ class App extends React.Component {
     convertFormSubmitToJsonSubmit(document.querySelector('.chat-form'));
   }
 
-  toggleLeftMenu() {
-    const menu = document.querySelector('.left');
-    const center = document.querySelector('.center');
-    const overlay = document.querySelector('.overlay');
-    if (menu.classList.contains('left-menu-toggled')) {
-      menu.classList.remove('left-menu-toggled');
-      center.classList.remove('center-menu-left');
-      overlay.classList.remove('overlay-toggled');
-    } else {
-      menu.classList.add('left-menu-toggled');
-      center.classList.add('center-menu-left');
-      overlay.classList.add('overlay-toggled');
-    }
-  }
-
-  toggleRightMenu() {
-    const menu = document.querySelector('.right');
-    const center = document.querySelector('.center');
-    const overlay = document.querySelector('.overlay');
-    if (menu.classList.contains('right-menu-toggled')) {
-      menu.classList.remove('right-menu-toggled');
-      center.classList.remove('center-menu-right');
-      overlay.classList.remove('overlay-toggled');
-    } else {
-      menu.classList.add('right-menu-toggled');
-      center.classList.add('center-menu-right');
-      overlay.classList.add('overlay-toggled');
-    }
-  }
-
   closeMenu() {
     const center = document.querySelector('.center');
     const overlay = document.querySelector('.overlay');
@@ -168,19 +138,23 @@ class App extends React.Component {
     }
   }
 
+  logout() {
+    ReactDOM.render(<Login message='Enter username and password to begin.' color='var(--secondary-color)' />, document.querySelector('.root'));
+  }
+
   render() {
     return [
       <nav key="nav" className="flex-center-vertical">
-        <h2 className="button" onClick={this.toggleLeftMenu} title="Open Chat"><MdChat /></h2>
+        <h2 className="button" onClick={toggleLeftMenu} title="Open Chat"><MdChat /></h2>
         <h2>What's For Lunch?</h2>
         <div className="flex">
-          <h2 className="button" onClick={this.toggleRightMenu} title="Open Menu"><TiThMenuOutline /></h2>
+          <h2 className="button" onClick={toggleRightMenu} title="Open Menu"><TiThMenuOutline /></h2>
           <h2 className="button" onClick={this.logout} title="Logout"><FiLogOut /></h2>
         </div>
       </nav>,
       <div key="left" className="left flex">
         <div className="flex menu-button-div">
-          <h2 className="button" onClick={this.toggleLeftMenu} title="Close Menu"><GiKnifeFork /></h2>
+          <h2 className="button" onClick={toggleLeftMenu} title="Close Menu"><GiKnifeFork /></h2>
         </div>
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
@@ -195,7 +169,7 @@ class App extends React.Component {
       </div>,
       <div key="right" className="right">
         <div className="flex menu-button-div">
-          <h2 className="button" onClick={this.toggleRightMenu} title="Close Menu"><GiKnifeFork /></h2>
+          <h2 className="button" onClick={toggleRightMenu} title="Close Menu"><GiKnifeFork /></h2>
           <h2 className="button" onClick={this.logout} title="Logout"><FiLogOut /></h2>
         </div>
         <div className="details-container"></div>
@@ -212,6 +186,36 @@ const ADD = 1;
 const REMOVE = 2;
 const CHANGE = 3;
 const notificationCounts = new Map();
+
+export const toggleLeftMenu = function() {
+  const menu = document.querySelector('.left');
+  const center = document.querySelector('.center');
+  const overlay = document.querySelector('.overlay');
+  if (menu.classList.contains('left-menu-toggled')) {
+    menu.classList.remove('left-menu-toggled');
+    center.classList.remove('center-menu-left');
+    overlay.classList.remove('overlay-toggled');
+  } else {
+    menu.classList.add('left-menu-toggled');
+    center.classList.add('center-menu-left');
+    overlay.classList.add('overlay-toggled');
+  }
+}
+
+export const toggleRightMenu = function() {
+  const menu = document.querySelector('.right');
+  const center = document.querySelector('.center');
+  const overlay = document.querySelector('.overlay');
+  if (menu.classList.contains('right-menu-toggled')) {
+    menu.classList.remove('right-menu-toggled');
+    center.classList.remove('center-menu-right');
+    overlay.classList.remove('overlay-toggled');
+  } else {
+    menu.classList.add('right-menu-toggled');
+    center.classList.add('center-menu-right');
+    overlay.classList.add('overlay-toggled');
+  }
+}
 
 const resetLogoutTimeout = function (timeout) {
   clearTimeout(logoutTimeout);
