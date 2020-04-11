@@ -187,7 +187,7 @@ const REMOVE = 2;
 const CHANGE = 3;
 const notificationCounts = new Map();
 
-export const toggleLeftMenu = function() {
+export const toggleLeftMenu = function () {
   const menu = document.querySelector('.left');
   const center = document.querySelector('.center');
   const overlay = document.querySelector('.overlay');
@@ -202,7 +202,7 @@ export const toggleLeftMenu = function() {
   }
 }
 
-export const toggleRightMenu = function() {
+export const toggleRightMenu = function () {
   const menu = document.querySelector('.right');
   const center = document.querySelector('.center');
   const overlay = document.querySelector('.overlay');
@@ -276,21 +276,21 @@ export const renderToast = function (message, color) {
   ReactDOM.render(<Toast message={message} color={color} />, document.querySelector('.toast-container'));
 }
 
-export const highlightNewData = function (type, newData, oldData) {
-  if (!document.hasFocus()) {
-    let newDataArray = [];
-    let oldDataArray = [];
-    let changedDataArray = [];
-    if (oldData && newData) {
-      newDataArray = newData.filter(compareID(oldData));
-      oldDataArray = oldData.filter(compareID(newData));
-      changedDataArray = newData.filter(compareVote(oldData));
-    } else if (newData) {
-      newDataArray = newData;
-    } else if (oldData) {
-      oldDataArray = oldData;
-    }
+export const handleNewData = function (type, newData, oldData) {
+  let newDataArray = [];
+  let oldDataArray = [];
+  let changedDataArray = [];
+  if (oldData && newData) {
+    newDataArray = newData.filter(compareID(oldData));
+    oldDataArray = oldData.filter(compareID(newData));
+    changedDataArray = newData.filter(compareVote(oldData));
+  } else if (newData) {
+    newDataArray = newData;
+  } else if (oldData) {
+    oldDataArray = oldData;
+  }
 
+  if (!document.hasFocus()) {
     newDataArray.forEach(function (data) {
       handleNotifications(type, data, ADD);
     });
@@ -300,8 +300,13 @@ export const highlightNewData = function (type, newData, oldData) {
     changedDataArray.forEach(function (data) {
       handleNotifications(type, data, CHANGE);
     });
-    return newDataArray.length > 0;
   }
+  if (type === CHAT) {
+    newDataArray.forEach(function (data) {
+      handleHighlighting(type, data);
+    });
+  }
+  return newDataArray.length > 0;
 }
 
 const handleNotifications = function (type, data, operation) {
@@ -314,7 +319,7 @@ const handleNotifications = function (type, data, operation) {
       } else if (type === LOCATION) {
         showNotification('New Location: \n' + data.name, '@' + data.user_name + ' added it!', 'location-icon.png');
       }
-      handleHighlighting(type, data);
+      handleHighlighting(data);
       break;
     case REMOVE:
       notificationCounts.delete(data._id);
@@ -327,7 +332,7 @@ const handleNotifications = function (type, data, operation) {
       if (type === LOCATION) {
         showNotification('Updated Location: \n' + data.name, '@' + data.user_name + ' voted!', 'location-icon.png');
       }
-      handleHighlighting(type, data);
+      handleHighlighting(data);
       break;
     default:
       break;
@@ -335,6 +340,36 @@ const handleNotifications = function (type, data, operation) {
   updateTitle();
   const audio = new Audio('aimrcv.wav');
   audio.play();
+}
+
+const handleHighlighting = function (data) {
+  if(!document.hasFocus()) {
+    window.addEventListener('focus', function () {
+      highlightWhenElementScrolledTo(data);
+    }, { once: true });
+  } else {
+    highlightWhenElementScrolledTo(data);
+  }
+}
+
+const highlightWhenElementScrolledTo = function (data) {
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        const element = entry.target;
+        element.style.background = 'var(--update-color)';
+        setTimeout(function () {
+          element.style.background = '';
+        }, 3000);
+        observer.unobserve(entry.target);
+        notificationCounts.delete(data._id);
+        updateTitle();
+      }
+    });
+  });
+  document.querySelectorAll('.id-' + data._id).forEach(function (element) {
+    observer.observe(element);
+  });
 }
 
 const updateTitle = function () {
@@ -346,28 +381,6 @@ const updateTitle = function () {
   if (count > 0) {
     document.title = '(' + count + ') ' + document.title;
   }
-}
-
-const handleHighlighting = function (type, data) {
-  window.addEventListener('focus', function () {
-    const observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          const element = entry.target;
-          element.style.background = 'var(--update-color)';
-          setTimeout(function () {
-            element.style.background = '';
-          }, 3000);
-          observer.unobserve(entry.target);
-          notificationCounts.delete(data._id);
-          updateTitle();
-        }
-      });
-    });
-    document.querySelectorAll('.id-' + data._id).forEach(function (element) {
-      observer.observe(element);
-    });
-  }, { once: true });
 }
 
 const compareVote = function (otherArray) {
