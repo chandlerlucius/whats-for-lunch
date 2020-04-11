@@ -105,6 +105,7 @@ button {
   padding: 10px;
   cursor: pointer;
   color: #FFFFFF;
+  margin-right: 5px;
   border-radius: 2px;
   text-transform: uppercase;
   transition: background 0.5s;
