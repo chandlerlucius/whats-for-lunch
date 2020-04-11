@@ -329,12 +329,13 @@ nav,
   background: var(--menu-color);
 }
 
-.gm-style .gm-style-iw-d::-webkit-scrollbar-track, .gm-style .gm-style-iw-d::-webkit-scrollbar-track-piece {
+.gm-style .gm-style-iw-d::-webkit-scrollbar-track,
+.gm-style .gm-style-iw-d::-webkit-scrollbar-track-piece {
   background: var(--menu-color);
 }
 
 .gm-style .gm-style-iw-c .gm-style-iw-d::-webkit-scrollbar-thumb {
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .left,
@@ -359,7 +360,7 @@ nav,
 
 .menu-button-div {
   justify-content: space-between;
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .left .menu-button-div {
@@ -487,6 +488,10 @@ nav,
 
 @media screen and (max-width: 1000px) {
 
+  .login-form {
+    width: 40%;
+  }
+
   .left,
   .right {
     width: 45%;
@@ -518,7 +523,18 @@ nav,
   }
 }
 
+@media screen and (max-width: 800px) {
+
+  .login-form {
+    width: 50%;
+  }
+}
+
 @media screen and (max-width: 600px) {
+
+  .login-form {
+    width: 60%;
+  }
 
   .left,
   .right {
