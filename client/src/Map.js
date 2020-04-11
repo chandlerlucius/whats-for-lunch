@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Details from './Details'
 
+let map, places, infoWindow;
 class Map extends React.Component {
   render() {
     return [
@@ -16,16 +17,7 @@ class Map extends React.Component {
   }
 
   componentDidMount() {
-    var map, places, infoWindow;
-    var markers = [];
-
-    function setCenter(position) {
-      map.setCenter({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      });
-      map.setZoom(12);
-    }
+    let markers = [];
 
     function initMap() {
       map = new window.google.maps.Map(document.querySelector('.map'), {
@@ -35,7 +27,7 @@ class Map extends React.Component {
         },
         zoom: 3
       });
-      navigator.geolocation.getCurrentPosition(setCenter);
+      getLocationAndCenterMap();
 
       infoWindow = new window.google.maps.InfoWindow({
         content: document.querySelector('.info-window-container')
@@ -59,7 +51,7 @@ class Map extends React.Component {
         return;
       }
 
-      var search = {
+      const search = {
         bounds: map.getBounds(),
         keyword: keyword,
         type: 'restaurant'
@@ -69,8 +61,8 @@ class Map extends React.Component {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
           clearResults();
           clearMarkers();
-          for (var i = 0; i < results.length; i++) {
-            var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+          for (let i = 0; i < results.length; i++) {
+            const markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
             markers[i] = new window.google.maps.Marker({
               label: markerLetter,
               position: results[i].geometry.location,
@@ -88,7 +80,7 @@ class Map extends React.Component {
     }
 
     function clearMarkers() {
-      for (var i = 0; i < markers.length; i++) {
+      for (let i = 0; i < markers.length; i++) {
         if (markers[i]) {
           markers[i].setMap(null);
         }
@@ -103,22 +95,22 @@ class Map extends React.Component {
     }
 
     function addResult(result, i) {
-      var results = document.querySelector('.listings');
-      var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+      const results = document.querySelector('.listings');
+      const markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
 
-      var tr = document.createElement('tr');
+      const tr = document.createElement('tr');
       tr.style.backgroundColor = (i % 2 === 0 ? 'var(--secondary-color)' : 'var(--menu-color)');
       tr.onclick = function () {
         window.google.maps.event.trigger(markers[i], 'click');
       };
 
-      var iconTd = document.createElement('td');
-      var nameTd = document.createElement('td');
-      var icon = document.createElement('img');
+      const iconTd = document.createElement('td');
+      const nameTd = document.createElement('td');
+      const icon = document.createElement('img');
       icon.src = 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi-dotless2_hdpi.png';
-      var name = document.createTextNode(result.name);
+      const name = document.createTextNode(result.name);
       iconTd.appendChild(icon);
-      var letter = document.createElement('span');
+      const letter = document.createElement('span');
       letter.innerHTML = markerLetter;
       iconTd.appendChild(letter);
       nameTd.appendChild(name);
@@ -128,14 +120,14 @@ class Map extends React.Component {
     }
 
     function clearResults() {
-      var results = document.querySelector('.listings');
+      const results = document.querySelector('.listings');
       while (results.childNodes[0]) {
         results.removeChild(results.childNodes[0]);
       }
     }
 
     function showInfoWindow() {
-      var marker = this;
+      const marker = this;
       places.getDetails({
         placeId: marker.placeResult.place_id
       },
@@ -151,6 +143,18 @@ class Map extends React.Component {
 
     initMap();
   }
+}
+
+export const getLocationAndCenterMap = function() {
+  navigator.geolocation.getCurrentPosition(setCenter);
+}
+
+export const setCenter = function(position) {
+  map.setCenter({
+    lat: position.coords.latitude,
+    lng: position.coords.longitude
+  });
+  map.setZoom(12);
 }
 
 export default Map;
