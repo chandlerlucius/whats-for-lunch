@@ -50,7 +50,9 @@ class Suggestions extends React.Component {
 
   renderDetails(location) {
     ReactDOM.render(<Details place={location} />, document.querySelector('.details-container'));
-    toggleRightMenu();
+    if(window.getComputedStyle(document.querySelector('.right')).marginRight !== '0px') {
+      toggleRightMenu();
+    }
   }
 
   render() {
