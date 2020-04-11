@@ -1,5 +1,7 @@
 import React from 'react'
 import { submitFormAsJson } from './App';
+import { MdMyLocation } from 'react-icons/md'
+import { getLocationAndCenterMap } from './Map';
 
 class Search extends React.Component {
 
@@ -7,15 +9,15 @@ class Search extends React.Component {
     event.preventDefault();
     submitFormAsJson(event.target);
   }
-  
+
   render() {
     return [
       <form key="manual-location" className="search-form flex" method="POST" action="location" onSubmit={this.submitForm}>
         <div>
-          <input className="location-add" placeholder="Add restaurant manually" type="search" name="name"/>
+          <input className="location-add" placeholder="Add restaurant manually" type="search" name="name" />
         </div>
         <div>
-          <button className="location-add-button">Add</button>
+          <button className="location-add-button" title="Add">Add</button>
         </div>
       </form>,
       <div key="google-location" className="search-form flex">
@@ -23,7 +25,8 @@ class Search extends React.Component {
           <input className="location-search" placeholder="Search for restaurant or food type" type="search" />
         </div>
         <div>
-          <button className="location-search-button">Search</button>
+          <button className="location-search-button" title="Search">Search</button>
+          <button className="location-search-button" title="Center Map" onClick={getLocationAndCenterMap}><MdMyLocation /></button>
         </div>
       </div>,
     ]
