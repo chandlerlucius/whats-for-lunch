@@ -388,7 +388,7 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 			} else if vote.Value == "remove" {
 				if vote.Location != "" && vote.User == document["user"] {
 					if len(document["up_votes"].(primitive.A)) > 0 {
-						message := "Someone has voted for this restaurant, you cannot remove it!"
+						message := "You cannot remove a location until all upvotes are removed as well!"
 						return nil, "", errors.New(message)
 					}
 					res, err := deleteDocumentByName("location", vote.Location)
@@ -465,8 +465,15 @@ func deleteDocumentByName(collectionName string, name string) (*mongo.DeleteResu
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	filter := bson.M{
+		"name": name,
+		"date": bson.M{
+			"$gt": time.Now().Add(-12 * time.Hour),
+			"$lt": time.Now().Add(12 * time.Hour),
+		},
+	}
 	collection := mongoClient.Database(database).Collection(collectionName)
-	res, err := collection.DeleteOne(ctx, bson.M{"name": name})
+	res, err := collection.DeleteOne(ctx, filter)
 	return res, err
 }
 
