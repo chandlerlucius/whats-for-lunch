@@ -23,42 +23,46 @@ class Login extends React.Component {
     const method = form.method;
     const action = form.action.replace('3000', '9000');
     event.preventDefault();
-    let messageTimeout = setTimeout(function() {
+    const messageTimeout1 = setTimeout(function() {
       react.setState({
-        message: '•',
+        message: '●',
         color: ''
       });
     }, 0);
-    messageTimeout = setTimeout(function() {
+    const messageTimeout2 = setTimeout(function() {
       react.setState({
-        message: '••',
+        message: '●●',
+        color: ''
+      });
+    }, 500);
+    const messageTimeout3 = setTimeout(function() {
+      react.setState({
+        message: '●●●',
         color: ''
       });
     }, 1000);
-    messageTimeout = setTimeout(function() {
+    const messageTimeout4 = setTimeout(function() {
       react.setState({
-        message: '•••',
+        message: '●●●●',
+        color: ''
+      });
+    }, 1500);
+    const messageTimeout5 = setTimeout(function() {
+      react.setState({
+        message: '●●●●●',
         color: ''
       });
     }, 2000);
-    messageTimeout = setTimeout(function() {
-      react.setState({
-        message: '••••',
-        color: ''
-      });
-    }, 3000);
-    messageTimeout = setTimeout(function() {
-      react.setState({
-        message: '•••••',
-        color: ''
-      });
-    }, 4000);
 
     const xhr = new XMLHttpRequest();
     xhr.open(method, action);
     xhr.onload = function () {
       if (xhr.readyState === 4) {
-        clearTimeout(messageTimeout);
+        clearTimeout(messageTimeout1);
+        clearTimeout(messageTimeout2);
+        clearTimeout(messageTimeout3);
+        clearTimeout(messageTimeout4);
+        clearTimeout(messageTimeout5);
         if (xhr.status === 200) {
           const json = JSON.parse(xhr.responseText);
           localStorage.setItem("token", json.token);
@@ -73,7 +77,11 @@ class Login extends React.Component {
       }
     }
     xhr.onerror = function () {
-      clearTimeout(messageTimeout);
+      clearTimeout(messageTimeout1);
+      clearTimeout(messageTimeout2);
+      clearTimeout(messageTimeout3);
+      clearTimeout(messageTimeout4);
+      clearTimeout(messageTimeout5);
       react.setState({
         message: 'Error connecting to server. Try again later.',
         color: 'var(--failure-color)'
