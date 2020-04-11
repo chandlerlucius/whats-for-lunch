@@ -57,7 +57,8 @@ class Details extends React.Component {
             :
             <div>
               <h1>{this.props.place.name}</h1>
-              <h2>Nothing but a name...</h2>
+              <br/>
+              <h3>Nothing but a name...</h3>
             </div>
           }
           {this.props.place.vote_count === undefined ?
