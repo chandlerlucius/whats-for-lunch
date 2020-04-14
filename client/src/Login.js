@@ -102,7 +102,7 @@ class Login extends React.Component {
       <form method="POST" action="/login" className="login-form" onSubmit={this.onSubmit} onReset={this.onReset}>
         <h1>What's For Lunch?</h1>
         <div className="input-container">
-          <input name="username" type="text" placeholder=" " required={true} minLength="3" autoFocus={true} autocorrect="off" autocapitalize="none"></input>
+          <input name="username" type="text" placeholder=" " required={true} minLength="3" autoFocus={true} autoCorrect="off" autoCapitalize="none"></input>
           <label htmlFor="username">Username</label>
           <span>Must have 3 or more characters</span>
         </div>
