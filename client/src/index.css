@@ -55,11 +55,6 @@ button {
   font-family: 'Raleway', sans-serif;
 }
 
-hr {
-  margin: 20px;
-  border: 1px solid rgba(160, 160, 160, 0.2);
-}
-
 input {
   width: 100%;
   outline: none;
@@ -202,6 +197,11 @@ a:hover {
   background-color: #FFFFFF;
   color: var(--secondary-color);
   box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.login-form hr {
+  margin: 20px;
+  border: 1px solid rgba(160, 160, 160, 0.2);
 }
 
 .login-message {
@@ -426,6 +426,17 @@ nav,
   padding-bottom: 10px;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.unread-div hr {
+  width: 100%;
+  border-color: var(--update-color);
+}
+
+.unread-div h6 {
+  width: fit-content;
+  margin: 0 5px 0 5px;
+  color: var(--update-color);
 }
 
 .new-messages-button {
