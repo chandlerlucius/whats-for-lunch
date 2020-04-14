@@ -306,7 +306,7 @@ export const handleNewData = function (type, newData, oldData) {
       handleHighlighting(type, data);
     });
   }
-  return newDataArray.length > 0;
+  return newDataArray;
 }
 
 const handleNotifications = function (type, data, operation) {
