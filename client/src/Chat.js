@@ -1,12 +1,12 @@
 import React from 'react'
-import {FaChevronDown} from 'react-icons/fa'
+import { FaChevronDown } from 'react-icons/fa'
 import { formatDate, handleNewData, CHAT } from './App'
 
 let container;
-let isScrolledToBottom;
+let wasScrolledToBottom;
 class Chat extends React.Component {
   keepScrollAtBottom() {
-    if (isScrolledToBottom) {
+    if (wasScrolledToBottom) {
       this.scrollToBottom();
     }
   }
@@ -17,24 +17,45 @@ class Chat extends React.Component {
 
   componentDidMount() {
     this.keepScrollAtBottom();
-    container.addEventListener('scroll', function () {
-      if (container.scrollHeight - container.clientHeight <= container.scrollTop + 1) {
-        document.querySelector('.new-messages-button').style.display = 'none';
-      }
-  });
   }
 
   componentDidUpdate(prevProps) {
-    this.keepScrollAtBottom();
     const newData = handleNewData(CHAT, this.props.messages, prevProps.messages);
-    if(newData && !isScrolledToBottom) {
-      document.querySelector('.new-messages-button').style.display = 'flex';
+    const focusOrScrolledAway = !document.hasFocus() || !wasScrolledToBottom;
+    if (newData.length > 0 && focusOrScrolledAway && !document.querySelector('.unread-div')) {
+      const div = document.createElement('div');
+      const hr1 = document.createElement('hr');
+      const h6 = document.createElement('h6');
+      const hr2 = document.createElement('hr');
+      h6.innerHTML = 'unread';
+      div.classList.add('unread-div');
+      div.classList.add('flex-center');
+      div.appendChild(hr1);
+      div.appendChild(h6);
+      div.appendChild(hr2);
+      const firstNewMessage = document.querySelector('.id-' + newData[0]._id);
+      const parent = document.querySelector('.id-' + newData[0]._id).parentNode;
+      parent.insertBefore(div, firstNewMessage)
+
+      if(!wasScrolledToBottom) {
+        document.querySelector('.new-messages-button').style.display = 'flex';
+      }
     }
+    if (!document.hasFocus()) {
+      window.addEventListener('focus', function () {
+        removeMessageBannersWhenScrolled();
+      }, { once: true });
+    } else if (!wasScrolledToBottom) {
+      removeMessageBannersWhenScrolled();
+    } else {
+      removeMessageBanners();
+    }
+    this.keepScrollAtBottom();
   }
 
   render() {
     container = document.querySelector('.chat-container');
-    isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
+    wasScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
     return [
       this.props.messages && this.props.messages.slice(0).reverse().map((message, index) =>
         <div key={index} className={"flex update-field id-" + message._id}>
@@ -60,9 +81,32 @@ class Chat extends React.Component {
         </div>
       ),
       <div key="new-messages" className="flex-center new-messages-button" onClick={this.scrollToBottom}>
-        <button className="flex-center"><FaChevronDown/>    New Messages    <FaChevronDown/></button>
+        <button className="flex-center"><FaChevronDown />    New Messages    <FaChevronDown /></button>
       </div>
     ]
+  }
+}
+
+const isScrolledToBottom = function() {
+  return container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
+}
+
+const removeMessageBannersWhenScrolled = function() {
+  if(isScrolledToBottom()) {
+    removeMessageBanners();
+  } else {
+    container.addEventListener('scroll', removeMessageBanners);
+  }
+}
+
+const removeMessageBanners = function () {
+  if(isScrolledToBottom()) {
+    document.querySelector('.new-messages-button').style.display = 'none';
+    const unread = document.querySelector('.unread-div');
+    if (unread) {
+      unread.parentNode.removeChild(unread);
+    }
+    container.removeEventListener('scroll', removeMessageBanners);
   }
 }
 
