@@ -20,9 +20,10 @@ class Chat extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    const collapsed = document.querySelector('.left').style.marginLeft === '-25%';
+    const focusScrolledOrCollapsed = !document.hasFocus() || !wasScrolledToBottom || collapsed;
     const newData = handleNewData(CHAT, this.props.messages, prevProps.messages);
-    const focusOrScrolledAway = !document.hasFocus() || !wasScrolledToBottom;
-    if (newData.length > 0 && focusOrScrolledAway && !document.querySelector('.unread-div')) {
+    if (newData.length > 0 && focusScrolledOrCollapsed && !document.querySelector('.unread-div')) {
       const div = document.createElement('div');
       const hr1 = document.createElement('hr');
       const h6 = document.createElement('h6');
@@ -35,12 +36,18 @@ class Chat extends React.Component {
       div.appendChild(hr2);
       const firstNewMessage = document.querySelector('.id-' + newData[0]._id);
       const parent = document.querySelector('.id-' + newData[0]._id).parentNode;
-      parent.insertBefore(div, firstNewMessage)
+      parent.insertBefore(div, firstNewMessage);
 
       if(!wasScrolledToBottom) {
         document.querySelector('.new-messages-button').style.display = 'flex';
       }
     }
+
+    if(newData.length > 0) {
+      const element = document.querySelector('.notification-count');
+      handleChatBalloon((parseInt(element.innerHTML) || 0) + newData.length);
+    }
+
     if (!document.hasFocus()) {
       window.addEventListener('focus', function () {
         removeMessageBannersWhenScrolled();
@@ -107,6 +114,19 @@ const removeMessageBanners = function () {
       unread.parentNode.removeChild(unread);
     }
     container.removeEventListener('scroll', removeMessageBanners);
+    handleChatBalloon(0);
+  }
+}
+
+const handleChatBalloon = function(count) {
+  if(count > 0) {
+    document.querySelector('.notification-balloon').style.display = 'block';
+    const element = document.querySelector('.notification-count');
+    element.style.display = 'block';
+    element.innerHTML = count;
+  } else {
+    document.querySelector('.notification-balloon').style.display = 'none';
+    document.querySelector('.notification-count').style.display = 'none';
   }
 }
 
