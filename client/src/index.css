@@ -385,6 +385,31 @@ nav,
   margin-left: 0;
 }
 
+.notification-icon {
+  position: relative;
+}
+
+.notification-balloon, .notification-count  {
+  display: none;
+}
+
+.notification-balloon {
+  top: 0;
+  right: 0;
+  width: 17px;
+  height: 17px;
+  position: absolute;
+  color: var(--update-color);
+}
+
+.notification-count {    
+  top: -2px;
+  right: 5px;
+  font-size: 15px;
+  color: black;
+  position: absolute;
+}
+
 .chat-container {
   height: 100%;
   cursor: text;
