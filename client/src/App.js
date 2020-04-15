@@ -10,6 +10,7 @@ import GoogleMap from './Map';
 import Suggestions from './Suggestions';
 import { MdChat } from 'react-icons/md';
 import { FiLogOut } from 'react-icons/fi';
+import { FaComment } from 'react-icons/fa';
 import { GiKnifeFork } from 'react-icons/gi';
 import { TiThMenuOutline } from 'react-icons/ti';
 
@@ -145,7 +146,11 @@ class App extends React.Component {
   render() {
     return [
       <nav key="nav" className="flex-center-vertical">
-        <h2 className="button" onClick={toggleLeftMenu} title="Open Chat"><MdChat /></h2>
+        <h2 className="button notification-icon" onClick={toggleLeftMenu} title="Open Chat">
+          <MdChat />
+          <FaComment className="notification-balloon"/>
+          <span className="notification-count"></span>
+        </h2>
         <h2>What's For Lunch?</h2>
         <div className="flex">
           <h2 className="button" onClick={toggleRightMenu} title="Open Menu"><TiThMenuOutline /></h2>
@@ -343,7 +348,7 @@ const handleNotifications = function (type, data, operation) {
 }
 
 const handleHighlighting = function (data) {
-  if(!document.hasFocus()) {
+  if (!document.hasFocus()) {
     window.addEventListener('focus', function () {
       highlightWhenElementScrolledTo(data);
     }, { once: true });
