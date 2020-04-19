@@ -15,10 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 const authenticate = function () {
   const href = window.location.href.replace('3000', '9000');
-  const token = localStorage.getItem('token');
-  if(token === null) {
-    ReactDOM.render(<Login message='Enter username and password to begin.' color='var(--secondary-color)'/>, document.querySelector('.root'));
-  }
+  let token = localStorage.getItem('token');
+  token = token != null ? token : "";
 
   const xhr = new XMLHttpRequest();
   xhr.timeout = 500;
@@ -28,6 +26,8 @@ const authenticate = function () {
       const json = JSON.parse(xhr.responseText);
       if (xhr.status === 200) {
         ReactDOM.render(<App timeout={json.timeout}/>, document.querySelector('.root'));
+      } else if (xhr.status === 404) {
+        ReactDOM.render(<Login message={json.body} color='var(--secondary-color)'/>, document.querySelector('.root'));
       } else {
         ReactDOM.render(<Login message={json.body} color='var(--failure-color)'/>, document.querySelector('.root'));
       }
