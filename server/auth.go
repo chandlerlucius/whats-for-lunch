@@ -36,7 +36,27 @@ var key = []byte("the_most_secret_key")
 var expirationTime = 10 * time.Minute
 
 func authenticateHandler(w http.ResponseWriter, r *http.Request) {
-	status, claims, token, err := authenticateRequest(w, r)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	token := r.URL.Query().Get("token")
+
+	usersEmpty := checkIfCollectionEmpty("user")
+	if usersEmpty {
+		title := "Failure"
+		body := "Welcome to What's For Lunch! Please create an admin user to begin."
+		message := Message{http.StatusNotFound, title, body, "", 0}
+		sendMessageAndLogError(w, message, err)
+		return
+	}
+	
+	if token == "" {
+		title := "Failure"
+		body := "Create or enter username and password to begin."
+		message := Message{http.StatusNotFound, title, body, "", 0}
+		sendMessageAndLogError(w, message, err)
+		return
+	}
+
+	status, claims, token, err := authenticate(token)
 	if err != nil || status != http.StatusOK {
 		title := "Failure"
 		body := "Token invalid or session expired. Please login again."
@@ -49,12 +69,6 @@ func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	body := "User authentication succeeded. Welcome " + claims.User.Username + "!"
 	message := Message{status, title, body, token, (claims.ExpiresAt - time.Now().Unix()) * 1000}
 	sendMessage(w, message)
-}
-
-func authenticateRequest(w http.ResponseWriter, r *http.Request) (int, *Claims, string, error) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	token := r.URL.Query().Get("token")
-	return authenticate(token)
 }
 
 func authenticateWebsocket(c *websocket.Conn, token string) (bool, string, *Claims) {
@@ -105,7 +119,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if user.ID == primitive.NilObjectID {
 		hash := hashPassword(password)
 		count := findNextUserCount()
-		user = User{primitive.NewObjectID(), time.Now(), count, username, hash}
+		usersEmpty := checkIfCollectionEmpty("user")
+		var userType string
+		if usersEmpty {
+			userType = "admin"
+		} else {
+			userType = "user"
+		}
+		user = User{primitive.NewObjectID(), time.Now(), userType, count, username, hash}
 		res, err := insertUserIntoDatabase(&user, "user")
 		if err != nil {
 			status := http.StatusInternalServerError
@@ -176,6 +197,18 @@ func findUserDocumentByID(id primitive.ObjectID) (User, error) {
 	return user, err
 }
 
+func checkIfCollectionEmpty(collectionName string) (bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	collection := mongoClient.Database(database).Collection(collectionName)
+	count, err := collection.EstimatedDocumentCount(ctx)
+	if err != nil {
+		log.Print(err);
+	}
+	return count == 0
+}
+
 func findNextUserCount() int {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -209,6 +242,7 @@ func findNextUserCount() int {
 type User struct {
 	ID       primitive.ObjectID `bson:"_id, omitempty"`
 	Date     time.Time
+	Type	 string
 	Count    int
 	Username string
 	Password string
