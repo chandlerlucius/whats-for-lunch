@@ -144,6 +144,10 @@ a:hover {
   justify-content: center;
 }
 
+.hidden {
+  display: none;
+}
+
 .update-field {
   border-radius: 5px;
   margin: 1px 0 1px 0;
@@ -173,9 +177,10 @@ a:hover {
 }
 
 .button {
+  cursor: pointer;
+  padding: 10px 15px 10px 15px;
   box-shadow: 0 0 0.5px #000000;
   background: rgba(0, 0, 0, 0.1);
-  padding: 10px 15px 10px 15px;
   transition: background 0.5s;
 }
 
@@ -369,10 +374,6 @@ nav,
   background: rgba(0, 0, 0, 0.1);
 }
 
-.left .menu-button-div {
-  justify-content: flex-end;
-}
-
 .left {
   left: 0;
 }
@@ -389,7 +390,8 @@ nav,
   position: relative;
 }
 
-.notification-balloon, .notification-count  {
+.notification-balloon,
+.notification-count {
   display: none;
 }
 
@@ -402,7 +404,7 @@ nav,
   color: var(--update-color);
 }
 
-.notification-count {    
+.notification-count {
   top: -2px;
   right: 5px;
   font-size: 15px;
@@ -447,6 +449,12 @@ nav,
   color: var(--menu-color);
 }
 
+.chat-icon-large {
+  width: 75px;
+  height: 75px;
+  margin: auto;
+}
+
 .chat-message {
   padding-bottom: 10px;
   white-space: pre-wrap;
@@ -469,6 +477,24 @@ nav,
   display: none;
   position: sticky;
   white-space: pre;
+}
+
+.tools-container {
+  position: relative;
+}
+
+.users-container {
+  top: 0;
+  width: 100%;
+  position: absolute;
+}
+
+.users-container table {
+  width: 100%;
+}
+
+.users-container, .settings-container, .users, .settings {
+  transition: 1s opacity;
 }
 
 .right {
