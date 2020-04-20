@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+    "strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -117,7 +118,7 @@ func authenticate(token string) (int, *Claims, string, error) {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	username := r.FormValue("username")
+	username := strings.TrimSpace(r.FormValue("username"))
 	password := r.FormValue("password")
 	if len(username) < 3 || len(password) < 3 {
 		message := Message{http.StatusBadRequest, "Failure", "Username and Password must longer than 3 characters.", "", 0}
