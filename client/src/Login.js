@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
-import { clearTimeoutsAndIntervals } from './App.js'
+import { socket, clearTimeoutsAndIntervals } from './App.js'
 
 class Login extends React.Component {
   constructor(props) {
@@ -10,10 +10,16 @@ class Login extends React.Component {
     this.state = { message: props.message, color: props.color }
     this.onSubmit = this.onSubmit.bind(this);
     this.onReset = this.onReset.bind(this);
+    if(socket) {
+      socket.close();
+    }
     clearTimeoutsAndIntervals();
   }
 
   componentDidUpdate() {
+    if(socket) {
+      socket.close();
+    }
     clearTimeoutsAndIntervals();
   }
 
