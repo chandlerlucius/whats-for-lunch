@@ -134,12 +134,15 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		count := findNextUserCount()
 		usersEmpty := checkIfCollectionEmpty("user")
 		var userRole string
+		var userEnabled bool
 		if usersEmpty {
 			userRole = "admin"
+			userEnabled = true
 		} else {
 			userRole = "user"
+			userEnabled = false
 		}
-		user = User{primitive.NewObjectID(), time.Now(), time.Now(), userRole, count, username, hash}
+		user = User{primitive.NewObjectID(), time.Now(), time.Now(), userRole, count, userEnabled, username, hash}
 		res, err := insertUserIntoDatabase(&user, "user")
 		if err != nil {
 			status := http.StatusInternalServerError
@@ -155,6 +158,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	success := checkPasswordHash(password, user.Password)
 	if success == true {
+		if !user.Enabled {
+			message := Message{http.StatusUnauthorized, "Failure", "User created, but contact the admin to enable your username.", "", 0}
+			sendMessageAndLogError(w, message, nil)
+			return
+		}
 		claims := &Claims{
 			User: user,
 			StandardClaims: jwt.StandardClaims{
@@ -264,6 +272,7 @@ type User struct {
 	LastLogin time.Time `json:"last_seen" bson:"last_seen"`
 	Role      string
 	Count     int
+	Enabled	  bool
 	Username  string
 	Password  string `json:"-"`
 }
