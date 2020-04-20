@@ -2,8 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import Chat from './Chat';
-import Toast from './Toast'
-import Login from './Login'
+import Toast from './Toast';
+import Users from './Users';
+import Login from './Login';
 import Search from './Search';
 import Details from './Details'
 import GoogleMap from './Map';
@@ -11,11 +12,13 @@ import Suggestions from './Suggestions';
 import { MdChat } from 'react-icons/md';
 import { FiLogOut } from 'react-icons/fi';
 import { FaComment } from 'react-icons/fa';
+import { MdSettings } from 'react-icons/md';
 import { GiKnifeFork } from 'react-icons/gi';
+import { FaArrowRight } from 'react-icons/fa';
 import { TiThMenuOutline } from 'react-icons/ti';
 
 let url;
-let socket;
+export let socket;
 let host = window.location.host;
 host = host.replace('3000', '9000');
 if (window.location.protocol === 'https:') {
@@ -87,6 +90,8 @@ class App extends React.Component {
           renderToast(json.body, "var(--failure-color)")
         } else if (json.type === 'chat') {
           ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
+        } else if (json.type === 'user') {
+          ReactDOM.render(<Users users={json.body} />, document.querySelector('.users-container'));
         } else if (json.type === 'location') {
           ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
           if (!document.querySelector('.details-div')) {
@@ -97,12 +102,23 @@ class App extends React.Component {
             element.style.color = 'var(--user-color-offline)';
             element.title = 'offline';
           });
+          document.querySelectorAll('.user-status').forEach(function (element) {
+            element.style.color = 'var(--user-color-offline)';
+            element.innerHTML = '● Offline';
+          });
           if (json.body) {
             json.body.forEach(function (user) {
               document.querySelectorAll('.user-status-' + user.id).forEach(function (element) {
                 element.style.color = 'var(--user-color-' + user.status + ')';
                 element.title = '● ' + user.status.charAt(0).toUpperCase() + user.status.slice(1);
-                element.title += '\nLast Seen: ' + formatDate(user.date);
+                element.title += '\nLast Seen: ' + formatDate(user.last_seen);
+              });
+              document.querySelectorAll('.user-display-status-' + user.id).forEach(function (element) {
+                element.style.color = 'var(--user-color-' + user.status + ')';
+                element.innerHTML = '● ' + user.status.charAt(0).toUpperCase() + user.status.slice(1);
+              });
+              document.querySelectorAll('.user-last-seen-' + user.id).forEach(function (element) {
+                element.innerHTML = formatDate(user.last_seen)
               });
             });
           }
@@ -146,11 +162,14 @@ class App extends React.Component {
   render() {
     return [
       <nav key="nav" className="flex-center-vertical">
-        <h2 className="button notification-icon" onClick={toggleLeftMenu} title="Open Chat">
-          <MdChat />
-          <FaComment className="notification-balloon"/>
-          <span className="notification-count"></span>
-        </h2>
+        <div className="flex">
+          <h2 className={"button " + TOOLS} onClick={toggleLeftMenu} title="Open Tools"><MdSettings /></h2>
+          <h2 className={"button notification-icon " + CHAT} onClick={toggleLeftMenu} title="Open Chat">
+            <MdChat />
+            <FaComment className="notification-balloon" />
+            <span className="notification-count"></span>
+          </h2>
+        </div>
         <h2>What's For Lunch?</h2>
         <div className="flex">
           <h2 className="button" onClick={toggleRightMenu} title="Open Menu"><TiThMenuOutline /></h2>
@@ -159,7 +178,25 @@ class App extends React.Component {
       </nav>,
       <div key="left" className="left flex">
         <div className="flex menu-button-div">
+          <h2 className={"button " + TOOLS} onClick={openChatOrTools} title="Open Tools"><MdSettings /></h2>
+          <h2 className={"button notification-icon " + CHAT} onClick={openChatOrTools} title="Open Chat">
+            <MdChat />
+            <FaComment className="notification-balloon" />
+            <span className="notification-count"></span>
+          </h2>
           <h2 className="button" onClick={toggleLeftMenu} title="Close Menu"><GiKnifeFork /></h2>
+        </div>
+        <div className="tools-container hidden">
+          <div className="button flex-center-vertical users" onClick={toggleToolsMenu}>
+            <h3>Users</h3>
+            <FaArrowRight />
+          </div>
+          <div className="users-container hidden"></div>
+          <div className="button flex-center-vertical settings">
+            <h3>Settings</h3>
+            <FaArrowRight />
+          </div>
+          <div className="settings-container hidden"></div>
         </div>
         <div className="chat-container"></div>
         <form className="chat-form" action="chat">
@@ -186,13 +223,15 @@ class App extends React.Component {
 }
 
 export const CHAT = 'chat';
+export const TOOLS = 'tools';
 export const LOCATION = 'location';
 const ADD = 1;
 const REMOVE = 2;
 const CHANGE = 3;
 const notificationCounts = new Map();
 
-export const toggleLeftMenu = function () {
+export const toggleLeftMenu = function (event) {
+  openChatOrTools(event);
   const menu = document.querySelector('.left');
   const center = document.querySelector('.center');
   const overlay = document.querySelector('.overlay');
@@ -219,6 +258,34 @@ export const toggleRightMenu = function () {
     menu.classList.add('right-menu-toggled');
     center.classList.add('center-menu-right');
     overlay.classList.add('overlay-toggled');
+  }
+}
+
+const openChatOrTools = function (event) {
+  const element = event.currentTarget;
+  if (element.classList.contains(CHAT)) {
+    document.querySelector('.tools-container').classList.add('hidden');
+    document.querySelector('.chat-container').classList.remove('hidden');
+    document.querySelector('.chat-form').classList.remove('hidden');
+  } else if (element.classList.contains(TOOLS)) {
+    document.querySelector('.tools-container').classList.remove('hidden');
+    document.querySelector('.chat-container').classList.add('hidden');
+    document.querySelector('.chat-form').classList.add('hidden');
+  }
+}
+
+export const toggleToolsMenu = function (event) {
+  const target = event.currentTarget;
+  const clazz = target.classList.contains('settings') ? '.settings-container' : '.users-container';
+  const element = document.querySelector(clazz);
+  if (element.classList.contains('hidden')) {
+    element.classList.remove('hidden');
+    document.querySelector('.users').classList.add('hidden');
+    document.querySelector('.settings').classList.add('hidden');
+  } else {
+    element.classList.add('hidden');
+    document.querySelector('.users').classList.remove('hidden');
+    document.querySelector('.settings').classList.remove('hidden');
   }
 }
 
