@@ -47,13 +47,26 @@ func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 		sendMessageAndLogError(w, message, err)
 		return
 	}
-	
+
 	if token == "" {
 		title := "Failure"
 		body := "Create or enter username and password to begin."
 		message := Message{http.StatusNotFound, title, body, "", 0}
 		sendMessageAndLogError(w, message, err)
 		return
+	}
+
+	claims := &Claims{}
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+	
+	user := &User{}
+	user.ID = claims.User.ID
+	user.LastLogin = time.Now()
+	newUser, _, err := updateDocumentInDatabase(user, "user")
+	if err != nil || newUser == (&User{}) {
+		log.Print(err)
 	}
 
 	status, claims, token, err := authenticate(token)
@@ -120,13 +133,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		hash := hashPassword(password)
 		count := findNextUserCount()
 		usersEmpty := checkIfCollectionEmpty("user")
-		var userType string
+		var userRole string
 		if usersEmpty {
-			userType = "admin"
+			userRole = "admin"
 		} else {
-			userType = "user"
+			userRole = "user"
 		}
-		user = User{primitive.NewObjectID(), time.Now(), userType, count, username, hash}
+		user = User{primitive.NewObjectID(), time.Now(), time.Now(), userRole, count, username, hash}
 		res, err := insertUserIntoDatabase(&user, "user")
 		if err != nil {
 			status := http.StatusInternalServerError
@@ -160,6 +173,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		err1 := json.NewEncoder(w).Encode(jsonData)
 		if err1 != nil {
 			log.Print(err1)
+		}
+
+		user.LastLogin = time.Now()
+		newUser, _, err2 := updateDocumentInDatabase(&user, "user")
+		if err2 != nil || newUser == (&User{}) {
+			log.Print(err2)
 		}
 	} else {
 		message := Message{http.StatusUnauthorized, "Failure", "Username or Password is incorrect.", "", 0}
@@ -197,14 +216,14 @@ func findUserDocumentByID(id primitive.ObjectID) (User, error) {
 	return user, err
 }
 
-func checkIfCollectionEmpty(collectionName string) (bool) {
+func checkIfCollectionEmpty(collectionName string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	collection := mongoClient.Database(database).Collection(collectionName)
 	count, err := collection.EstimatedDocumentCount(ctx)
 	if err != nil {
-		log.Print(err);
+		log.Print(err)
 	}
 	return count == 0
 }
@@ -240,12 +259,13 @@ func findNextUserCount() int {
 
 // User is a simple user auth object
 type User struct {
-	ID       primitive.ObjectID `bson:"_id, omitempty"`
-	Date     time.Time
-	Type	 string
-	Count    int
-	Username string
-	Password string
+	ID        primitive.ObjectID `bson:"_id, omitempty"`
+	Date      time.Time
+	LastLogin time.Time `json:"last_seen" bson:"last_seen"`
+	Role      string
+	Count     int
+	Username  string
+	Password  string `json:"-"`
 }
 
 // Claims is a jwt claims object
