@@ -18,6 +18,7 @@ import (
 
 var clientTokens = make(map[*websocket.Conn]string)
 var clientUserIDs = sync.Map{}
+var clientOfflineUserIDs = sync.Map{}
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -41,15 +42,19 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	clientTokens[c] = token
+	clientOfflineUserIDs.Delete(claims.User.ID.Hex())
 	clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 
 	writeDocumentsToClient(c, "location", claims)
 	writeDocumentsToClient(c, "chat", claims)
+	writeDocumentsToClient(c, "user", claims)
 	handleConnection(c, claims.User.ID.Hex())
 }
 
 func handleConnection(c *websocket.Conn, userID string) {
 	defer func() {
+		time, _ := clientUserIDs.Load(userID)
+		clientOfflineUserIDs.Store(userID, time)
 		clientUserIDs.Delete(userID)
 		delete(clientTokens, c)
 		c.Close()
@@ -75,20 +80,28 @@ func handleConnection(c *websocket.Conn, userID string) {
 
 		if websocketMessage.Type == "background" {
 			var results []bson.M
-			clientUserIDs.Range(func(key interface{}, value interface{}) bool {
+			clientOfflineUserIDs.Range(func(key interface{}, value interface{}) bool {
 				date := value.(time.Time)
 				var status = "offline"
+				var result = bson.M{"id": key, "last_seen": date, "status": status}
+				results = append(results, result)
+				return true
+			})
+			clientUserIDs.Range(func(key interface{}, value interface{}) bool {
+				date := value.(time.Time)
+				var status string
 				if date.Before(time.Now().Add(-5 * time.Minute)) {
 					status = "away"
 				} else {
 					status = "active"
 				}
-				var result = bson.M{"id": key, "date": date, "status": status}
+				var result = bson.M{"id": key, "last_seen": date, "status": status}
 				results = append(results, result)
 				return true
 			})
 			if websocketMessage.Active {
 				clientTokens[c] = token
+				clientOfflineUserIDs.Delete(claims.User.ID.Hex())
 				clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 			}
 
@@ -100,6 +113,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 		} else {
 			log.Print("Message received from websocket. User: " + claims.User.Username + " | Message: " + websocketMessage.Type)
 			clientTokens[c] = token
+			clientOfflineUserIDs.Delete(claims.User.ID.Hex())
 			clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 		}
 
@@ -322,7 +336,13 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 	filter := bson.M{}
 	update := bson.M{}
 	response := ""
-	if collectionName == "location" {
+	if collectionName == "user" {
+		user, ok := data.(*User)
+		if ok {
+			filter = bson.M{"_id": user.ID}
+			update = bson.M{"$set" : bson.M{"last_seen": user.LastLogin}}
+		}
+	} else if collectionName == "location" {
 		vote, ok := data.(*Vote)
 		if ok {
 			document := searchDocumentsForName(collectionName, vote.Location)
