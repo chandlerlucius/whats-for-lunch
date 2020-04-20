@@ -25,6 +25,7 @@ const authenticate = function () {
     if (xhr.readyState === 4) {
       const json = JSON.parse(xhr.responseText);
       if (xhr.status === 200) {
+        localStorage.setItem("token", json.token);
         ReactDOM.render(<App timeout={json.timeout}/>, document.querySelector('.root'));
       } else if (xhr.status === 404) {
         ReactDOM.render(<Login message={json.body} color='var(--secondary-color)'/>, document.querySelector('.root'));
