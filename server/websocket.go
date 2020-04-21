@@ -137,6 +137,17 @@ func handleConnection(c *websocket.Conn, userID string) {
 			vote.Date = time.Now()
 			vote.User = claims.User.ID
 			updateDocument(c, bytes, vote, "location")
+		}  else if websocketMessage.Type == "user" {
+			user := &User{}
+			if claims.User.Role == "admin" {
+				updateDocument(c, bytes, user, "user")
+			} else {
+				message := Message{}
+				message.Status = http.StatusUnauthorized
+				message.Title = "user"
+				message.Body = "You must be an admin to change user settings!"
+				c.WriteJSON(message)
+			}
 		} else {
 			continue
 		}
@@ -158,6 +169,8 @@ func handleConnection(c *websocket.Conn, userID string) {
 				writeDocumentsToClient(client, "location", claims)
 			} else if websocketMessage.Type == "vote" {
 				writeDocumentsToClient(client, "location", claims)
+			} else if websocketMessage.Type == "user" {
+				writeDocumentsToClient(client, "user", claims)
 			}
 		}
 	}
@@ -339,8 +352,29 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 	if collectionName == "user" {
 		user, ok := data.(*User)
 		if ok {
-			filter = bson.M{"_id": user.ID}
-			update = bson.M{"$set" : bson.M{"last_seen": user.LastLogin}}
+			document := searchDocumentsForName(collectionName, user.Username)
+			if document == nil {
+				return nil, "", errors.New(user.Username + " not found!")
+			}
+			if document["role"] == "admin" {
+				return nil, "", errors.New("Admin role " + user.Username + " cannot by modified!")
+			}
+			if user.Remove {
+				res, err := deleteDocumentByName("user", user.Username)
+				if res.DeletedCount == 1 {
+					response = "Successfully removed " + user.Username + "!"
+					return res, response, err
+				}
+				return nil, "", errors.New(user.Username + " not found!")
+			}
+
+			filter = bson.M{"_id": document["_id"]}
+			if user.LastLogin == (time.Time{}) {
+				update = bson.M{"$set" : bson.M{"enabled": user.Enabled}}
+			} else {
+				update = bson.M{"$set" : bson.M{"last_seen": user.LastLogin}}
+			}
+			response = "User " + user.Username + " updated successfully!"
 		}
 	} else if collectionName == "location" {
 		vote, ok := data.(*Vote)
@@ -474,7 +508,7 @@ func searchDocumentsForName(collectionName string, name string) bson.M {
 		if err1 != nil {
 			log.Print(err1)
 		}
-		if result["name"] == name {
+		if result["name"] == name || result["username"] == name{
 			return result
 		}
 	}
@@ -485,12 +519,19 @@ func deleteDocumentByName(collectionName string, name string) (*mongo.DeleteResu
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	filter := bson.M{
-		"name": name,
-		"date": bson.M{
-			"$gt": time.Now().Add(-12 * time.Hour),
-			"$lt": time.Now().Add(12 * time.Hour),
-		},
+	var filter bson.M
+	if collectionName == "location" {
+		filter = bson.M{
+			"name": name,
+			"date": bson.M{
+				"$gt": time.Now().Add(-12 * time.Hour),
+				"$lt": time.Now().Add(12 * time.Hour),
+			},
+		}
+	} else if collectionName == "user" {
+		filter = bson.M{
+			"username": name,
+		}
 	}
 	collection := mongoClient.Database(database).Collection(collectionName)
 	res, err := collection.DeleteOne(ctx, filter)
