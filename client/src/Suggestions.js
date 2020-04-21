@@ -58,7 +58,7 @@ class Suggestions extends React.Component {
   render() {
     return (
       this.props.locations && this.props.locations.map((location, index) =>
-        <form key={index} action="vote" className={"vote-form flex update-field id-" + location._id}>
+        <form key={index} method="POST" action="vote" className={"vote-form flex update-field id-" + location._id}>
           <div>
             {index === 0 ?
               <h1 className="vote-checkmark" title="Lunch is here!"><MdCheck /></h1>
