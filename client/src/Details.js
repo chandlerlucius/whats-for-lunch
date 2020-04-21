@@ -1,6 +1,6 @@
 import React from 'react';
 import RestaurantDetails from './RestaurantDetails'
-import { submitFormAsJson } from './App'
+import { submitFormWithEvent } from './App'
 import { FaChevronLeft } from 'react-icons/fa'
 
 class Details extends React.Component {
@@ -17,11 +17,6 @@ class Details extends React.Component {
       const messageThreeTop = messageThree.getBoundingClientRect().top;
       messageThree.style.paddingTop = mapTop - messageThreeTop - 10 + 'px';
     }
-  }
-
-  submitForm(event) {
-    event.preventDefault();
-    submitFormAsJson(event.target);
   }
 
   componentDidMount() {
@@ -63,7 +58,7 @@ class Details extends React.Component {
           }
           {this.props.place.vote_count === undefined ?
             <div>
-              <form key="detail-form" className="location-form" method="POST" action="location" onSubmit={this.submitForm}>
+              <form key="detail-form" method="POST" action="location" onSubmit={submitFormWithEvent} className="location-form">
                 <input type="hidden" name="name" value={this.props.place.name}></input>
                 <input type="hidden" name="place_id" value={this.props.place.place_id}></input>
                 <input type="hidden" name="rating" value={this.props.place.rating}></input>
