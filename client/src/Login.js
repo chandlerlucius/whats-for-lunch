@@ -11,14 +11,14 @@ class Login extends React.Component {
     this.onSubmit = this.onSubmit.bind(this);
     this.onReset = this.onReset.bind(this);
     if(socket) {
-      socket.close();
+      socket.close(4002);
     }
     clearTimeoutsAndIntervals();
   }
 
   componentDidUpdate() {
     if(socket) {
-      socket.close();
+      socket.close(4002);
     }
     clearTimeoutsAndIntervals();
   }
@@ -105,7 +105,7 @@ class Login extends React.Component {
 
   render() {
     return (
-      <form method="POST" action="/login" className="login-form" onSubmit={this.onSubmit} onReset={this.onReset}>
+      <form key="login-form" method="POST" action="/login" onSubmit={this.onSubmit} onReset={this.onReset} className="login-form" >
         <h1>What's For Lunch?</h1>
         <div className="input-container">
           <input name="username" type="text" placeholder=" " required={true} minLength="3" autoFocus={true} autoCorrect="off" autoCapitalize="none"></input>
