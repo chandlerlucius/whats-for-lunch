@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-    "strings"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -61,11 +61,10 @@ func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	})
-	
-	user := &User{}
-	user.ID = claims.User.ID
+
+	user := claims.User
 	user.LastLogin = time.Now()
-	newUser, _, err := updateDocumentInDatabase(user, "user")
+	newUser, _, err := updateDocumentInDatabase(&user, "user")
 	if err != nil || newUser == (&User{}) {
 		log.Print(err)
 	}
@@ -143,7 +142,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			userRole = "user"
 			userEnabled = false
 		}
-		user = User{primitive.NewObjectID(), time.Now(), time.Now(), userRole, count, userEnabled, username, hash}
+		user = User{primitive.NewObjectID(), time.Now(), time.Now(), userRole, count, userEnabled, username, hash, false}
 		res, err := insertUserIntoDatabase(&user, "user")
 		if err != nil {
 			status := http.StatusInternalServerError
@@ -273,9 +272,10 @@ type User struct {
 	LastLogin time.Time `json:"last_seen" bson:"last_seen"`
 	Role      string
 	Count     int
-	Enabled	  bool
+	Enabled   bool
 	Username  string
 	Password  string `json:"-"`
+	Remove    bool   `bson:"-"`
 }
 
 // Claims is a jwt claims object
