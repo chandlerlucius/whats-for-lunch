@@ -1,17 +1,22 @@
 import React from 'react'
-import { formatDate, toggleToolsMenu } from './App';
-import { FaArrowLeft } from 'react-icons/fa';
+import { formatDate, submitFormAsJson, submitFormWithEvent } from './App';
 
 class Users extends React.Component {
 
+    submitForm(event) {
+        const element = event.currentTarget;
+        const form = element.closest('form');
+        if(element.classList.contains('remove')) {
+            const input = form.querySelector('[name="remove"]');
+            input.value = true;
+        }
+        submitFormAsJson(form);
+    }
+
     render() {
-        return [
-            <div key="tools-buttons" className="button flex-center-vertical users" onClick={toggleToolsMenu}>
-                <FaArrowLeft />
-                <h3>Back</h3>
-            </div>,
+        return (
             this.props.users && this.props.users.map((user, index) =>
-                <div key={index}>
+                <form key={index} method="POST" action="user" >
                     <h1 className="chat-icon chat-icon-large flex-center" style={{ background: "var(--user-color-" + (user.count % 11) + ")" }}>
                         {user.username.toUpperCase().charAt(0)}
                     </h1>
@@ -39,12 +44,24 @@ class Users extends React.Component {
                                 <td>Created:</td>
                                 <td><strong>{formatDate(user.date)}</strong></td>
                             </tr>
+                            <tr>
+                                <td>Enabled:</td>
+                                <td><input type="checkbox" name="enabled" checked={user.enabled} onChange={this.submitForm}></input></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <input type="hidden" name="remove" value={false}></input>
+                                    <button type="button" className="remove" onClick={this.submitForm}>Remove User</button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                     <br />
-                </div>
+                    <input type="hidden" name="username" value={user.username}></input>
+                </form>
             )
-        ]
+        )
     }
 }
 
