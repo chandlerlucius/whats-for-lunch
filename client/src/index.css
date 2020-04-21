@@ -480,21 +480,21 @@ nav,
 }
 
 .tools-container {
-  position: relative;
+  height: 100%;
 }
 
 .users-container {
-  top: 0;
-  width: 100%;
-  position: absolute;
+  height: calc(100% - 75px);
+  overflow: auto;
 }
 
 .users-container table {
   width: 100%;
 }
 
-.users-container, .settings-container, .users, .settings {
-  transition: 1s opacity;
+.users-container input {
+  margin: 0;
+  width: fit-content;
 }
 
 .right {
