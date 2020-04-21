@@ -1,18 +1,13 @@
 import React from 'react'
-import { submitFormAsJson } from './App';
 import { MdMyLocation } from 'react-icons/md'
+import { submitFormWithEvent } from './App';
 import { getLocationAndCenterMap } from './Map';
 
 class Search extends React.Component {
 
-  submitForm(event) {
-    event.preventDefault();
-    submitFormAsJson(event.target);
-  }
-
   render() {
     return [
-      <form key="manual-location" className="search-form flex" method="POST" action="location" onSubmit={this.submitForm}>
+      <form key="location-form" method="POST" action="location" onSubmit={submitFormWithEvent} className="search-form flex">
         <div>
           <input className="location-add" placeholder="Add restaurant manually" type="search" name="name" />
         </div>
