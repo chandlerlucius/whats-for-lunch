@@ -1,7 +1,7 @@
 import React from 'react'
 import { AiOutlineClose } from 'react-icons/ai'
 
-let toastCloseTimeout;
+export let toastCloseTimeout;
 
 class Toast extends React.Component {
 
