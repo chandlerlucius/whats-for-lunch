@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import Chat from './Chat';
-import Toast from './Toast';
+import Toast, { toastCloseTimeout } from './Toast';
 import Users from './Users';
 import Login from './Login';
 import Search from './Search';
@@ -14,6 +14,7 @@ import { FiLogOut } from 'react-icons/fi';
 import { FaComment } from 'react-icons/fa';
 import { MdSettings } from 'react-icons/md';
 import { GiKnifeFork } from 'react-icons/gi';
+import { FaArrowLeft } from 'react-icons/fa';
 import { FaArrowRight } from 'react-icons/fa';
 import { TiThMenuOutline } from 'react-icons/ti';
 
@@ -54,7 +55,7 @@ class App extends React.Component {
       socket.onclose = function (event) {
         if (event.code === 4001) {
           ReactDOM.render(<Login message={event.reason} color="var(--failure-color)" />, document.querySelector('.root'));
-        } else {
+        } else if(event.code !== 4002) {
           setSocketTimeout();
         }
       };
@@ -127,7 +128,6 @@ class App extends React.Component {
       }
     };
     start();
-    convertFormSubmitToJsonSubmit(document.querySelector('.chat-form'));
   }
 
   closeMenu() {
@@ -191,15 +191,19 @@ class App extends React.Component {
             <h3>Users</h3>
             <FaArrowRight />
           </div>
-          <div className="users-container hidden"></div>
-          <div className="button flex-center-vertical settings">
+          <div className="button flex-center-vertical settings" onClick={toggleToolsMenu}>
             <h3>Settings</h3>
             <FaArrowRight />
           </div>
+          <div className="button flex-center-vertical back hidden" onClick={toggleToolsMenu}>
+            <FaArrowLeft />
+            <h3>Back</h3>
+          </div>
+          <div className="users-container hidden"></div>
           <div className="settings-container hidden"></div>
         </div>
         <div className="chat-container"></div>
-        <form className="chat-form" action="chat">
+        <form method="POST" action="chat" onSubmit={submitFormWithEvent} className="chat-form">
           <textarea name="message" className="chat-textarea" rows={4} required={true} placeholder="Send a message..." onKeyPress={this.submitWhenEnterPressed}></textarea>
           <button type="submit">Send</button>
         </form>
@@ -276,16 +280,30 @@ const openChatOrTools = function (event) {
 
 export const toggleToolsMenu = function (event) {
   const target = event.currentTarget;
-  const clazz = target.classList.contains('settings') ? '.settings-container' : '.users-container';
-  const element = document.querySelector(clazz);
-  if (element.classList.contains('hidden')) {
-    element.classList.remove('hidden');
-    document.querySelector('.users').classList.add('hidden');
-    document.querySelector('.settings').classList.add('hidden');
-  } else {
-    element.classList.add('hidden');
+  if(target.classList.contains('back')) {
+    document.querySelector('.back').classList.add('hidden');
+    document.querySelector('.users-container').classList.add('hidden');
+    document.querySelector('.settings-container').classList.add('hidden');
     document.querySelector('.users').classList.remove('hidden');
     document.querySelector('.settings').classList.remove('hidden');
+  } else {
+    let clazz;
+    if(target.classList.contains('users')) {
+      clazz = '.users-container';
+    } else if(target.classList.contains('settings')) {
+      clazz = '.settings-container';
+    }
+    const element = document.querySelector(clazz);
+    if (element.classList.contains('hidden')) {
+      element.classList.remove('hidden');
+      document.querySelector('.users').classList.add('hidden');
+      document.querySelector('.settings').classList.add('hidden');
+    } else {
+      element.classList.add('hidden');
+      document.querySelector('.users').classList.remove('hidden');
+      document.querySelector('.settings').classList.remove('hidden');
+    }
+    document.querySelector('.back').classList.remove('hidden');
   }
 }
 
@@ -308,17 +326,18 @@ const backgroundWebsocket = function () {
   sendWebsocketMessage(map);
 }
 
-export const convertFormSubmitToJsonSubmit = function (form) {
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    submitFormAsJson(form);
-  });
+export const submitFormWithEvent = function(event) {
+  event.preventDefault();
+  submitFormAsJson(event.target);
 }
 
 export const submitFormAsJson = function (form) {
   const map = {};
   const formData = new FormData(form);
   formData.forEach(function (value, key) {
+    if(value === 'on' || value === 'true') {
+      value = true;
+    }
     map[key] = value;
   });
   map['type'] = form.action.split('/').pop();
@@ -338,6 +357,7 @@ export const clearTimeoutsAndIntervals = function () {
   clearTimeout(socketTimeout);
   clearTimeout(logoutTimeout);
   clearTimeout(backgroundTimeout);
+  clearTimeout(toastCloseTimeout);
 }
 
 export const formatDate = function (date) {
