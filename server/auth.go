@@ -52,7 +52,7 @@ func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	if token == "" {
 		title := "Failure"
 		body := "Create or enter username and password to begin."
-		message := Message{http.StatusNotFound, title, body, "", 0}
+		message := Message{http.StatusBadRequest, title, body, "", 0}
 		sendMessageAndLogError(w, message, err)
 		return
 	}
