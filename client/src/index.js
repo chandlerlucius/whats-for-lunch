@@ -27,10 +27,12 @@ const authenticate = function () {
       if (xhr.status === 200) {
         localStorage.setItem("token", json.token);
         ReactDOM.render(<App timeout={json.timeout}/>, document.querySelector('.root'));
+      } else if (xhr.status === 400) {
+        ReactDOM.render(<Login message={json.body} color='var(--secondary-color)' status={xhr.status}/>, document.querySelector('.root'));
       } else if (xhr.status === 404) {
-        ReactDOM.render(<Login message={json.body} color='var(--secondary-color)'/>, document.querySelector('.root'));
+        ReactDOM.render(<Login message={json.body} color='var(--secondary-color)' status={xhr.status}/>, document.querySelector('.root'));
       } else {
-        ReactDOM.render(<Login message={json.body} color='var(--failure-color)'/>, document.querySelector('.root'));
+        ReactDOM.render(<Login message={json.body} color='var(--failure-color)' status={xhr.status}/>, document.querySelector('.root'));
       }
     }
   }
