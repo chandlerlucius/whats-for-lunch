@@ -1,7 +1,7 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import App from './App'
-import { socket, clearTimeoutsAndIntervals } from './App.js'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import { socket, clearTimeoutsAndIntervals } from './App.js';
 
 class Login extends React.Component {
   constructor(props) {
@@ -10,14 +10,14 @@ class Login extends React.Component {
     this.state = { message: props.message, color: props.color }
     this.onSubmit = this.onSubmit.bind(this);
     this.onReset = this.onReset.bind(this);
-    if(socket) {
+    if (socket) {
       socket.close(4002);
     }
     clearTimeoutsAndIntervals();
   }
 
   componentDidUpdate() {
-    if(socket) {
+    if (socket) {
       socket.close(4002);
     }
     clearTimeoutsAndIntervals();
@@ -29,31 +29,31 @@ class Login extends React.Component {
     const method = form.method;
     const action = form.action.replace('3000', '9000');
     event.preventDefault();
-    const messageTimeout1 = setTimeout(function() {
+    const messageTimeout1 = setTimeout(function () {
       react.setState({
         message: '●',
         color: ''
       });
     }, 0);
-    const messageTimeout2 = setTimeout(function() {
+    const messageTimeout2 = setTimeout(function () {
       react.setState({
         message: '●  ●',
         color: ''
       });
     }, 500);
-    const messageTimeout3 = setTimeout(function() {
+    const messageTimeout3 = setTimeout(function () {
       react.setState({
         message: '●  ●  ●',
         color: ''
       });
     }, 1000);
-    const messageTimeout4 = setTimeout(function() {
+    const messageTimeout4 = setTimeout(function () {
       react.setState({
         message: '●  ●  ●  ●',
         color: ''
       });
     }, 1500);
-    const messageTimeout5 = setTimeout(function() {
+    const messageTimeout5 = setTimeout(function () {
       react.setState({
         message: '●  ●  ●  ●  ●',
         color: ''
@@ -98,7 +98,7 @@ class Login extends React.Component {
 
   onReset() {
     this.setState({
-      message: 'Enter username and password to begin.',
+      message: 'Create or enter username and password to begin.',
       color: 'var(--secondary-color)'
     });
   }
@@ -120,7 +120,7 @@ class Login extends React.Component {
         <span className="login-message" style={{ color: this.state.color }}>{this.state.message}</span>
         <hr />
         <button type="reset">Reset</button>
-        <button type="submit">Login / Signup</button>
+        <button type="submit">Signup / Login</button>
       </form>
     )
   }
