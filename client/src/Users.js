@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDate, submitFormAsJson, submitFormWithEvent } from './App';
+import { formatDate, submitFormAsJson } from './App';
 
 class Users extends React.Component {
 
