@@ -119,6 +119,7 @@ class Login extends React.Component {
         </div>
         <span className="login-message" style={{ color: this.state.color }}>{this.state.message}</span>
         <hr />
+        <input type="hidden" name="offset" value={-(new Date().getTimezoneOffset() / 60)}></input>
         <button type="reset">Reset</button>
         <button type="submit">Signup / Login</button>
       </form>
