@@ -3,24 +3,17 @@ import { submitFormWithEvent } from './App';
 import timezones from './data/timezones.json';
 
 const timezoneData = JSON.parse(JSON.stringify(timezones));
+export let timezoneInterval;
 class Settings extends React.Component {
 
+    resetTimezoneInterval = function () {
+      clearTimeout(timezoneInterval);
+      timezoneInterval = setInterval(this.setTimezoneOptions, 1000 * 60);
+    }
+
     setTimezoneOptions() {
-        let clientOffset = this.getClientOffset();
-        if (this.props.settings && this.props.settings[0].timezone_offset) {
-            clientOffset = this.props.settings[0].timezone_offset;
-        }
         for (let i = 0; i < timezoneData.length; i++) {
-            let option = document.querySelector('.' + timezoneData[i].name.replace(/\s/g, '-'));
-            if(!option) {
-                option = document.createElement('option');
-                option.value = timezoneData[i].offset;
-                option.classList.add(timezoneData[i].name.replace(/\s/g, '-'));
-                document.querySelector('.timezone').add(option);
-                if (clientOffset === timezoneData[i].offset) {
-                    option.selected = true;
-                }
-            }
+            const option = document.querySelector('.' + timezoneData[i].name.replace(/\s/g, '-'));
             const millis = timezoneData[i].offset * 60 * 60 * 1000 + new Date().getTimezoneOffset() * 60 * 1000;
             const d = new Date(new Date().getTime() + millis);
             const month = new Intl.DateTimeFormat('en', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(d)
@@ -35,21 +28,38 @@ class Settings extends React.Component {
         return -(Math.max(jan, jul)) / 60;
     }
 
-    setInputValues() {
+    componentDidMount() {
+        this.initializeInputValues();
+    }
+
+    initializeInputValues() {
+        let clientOffset = this.getClientOffset();
+        if (this.props.settings && this.props.settings[0].timezone_offset) {
+            clientOffset = this.props.settings[0].timezone_offset;
+        }
+        for (let i = 0; i < timezoneData.length; i++) {
+            const option = document.createElement('option');
+            option.value = timezoneData[i].offset;
+            option.classList.add(timezoneData[i].name.replace(/\s/g, '-'));
+            document.querySelector('.timezone').add(option);
+            if (clientOffset === timezoneData[i].offset) {
+                option.selected = true;
+            }
+        }
+        this.updateInputValues();
+    }
+
+    componentDidUpdate() {
+        this.updateInputValues();
+    }
+
+    updateInputValues() {
         if (this.props.settings) {
             document.querySelector('.start_time_string').value = this.props.settings[0].start_time_string;
             document.querySelector('.end_time_string').value = this.props.settings[0].end_time_string;
         }
-        timezoneInterval = setInterval(this.setTimezoneOptions, 1000 * 60);
+        this.resetTimezoneInterval()
         this.setTimezoneOptions();
-    }
-
-    componentDidMount() {
-        this.setInputValues();
-    }
-
-    componentDidUpdate() {
-        this.setInputValues();
     }
 
     render() {
@@ -72,7 +82,5 @@ class Settings extends React.Component {
         )
     }
 }
-
-export let timezoneInterval;
 
 export default Settings;
