@@ -387,6 +387,10 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 			voting.EndTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), endTimeHours, endTimeMinutes, 0, 0, location)
 			filter = bson.M{"name": voting.Name}
 
+			if voting.StartTime.After(voting.EndTime) {
+				return nil, "", errors.New("Start time must be before end time")
+			}
+
 			document := searchDocumentsForName(collectionName, voting.Name)
 			if document["start_time_string"] != voting.StartTimeString {
 				document["start_time_string"] = voting.StartTimeString
@@ -454,8 +458,21 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 			if err != nil {
 				log.Print(err)
 			}
-
+			
+			voting := Voting{}
+			settings := searchDocumentsForName("settings", "voting")
+			bsonBytes, _ := bson.Marshal(settings)
+			bson.Unmarshal(bsonBytes, &voting)
+			voting.StartTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), voting.StartTime.Hour(), voting.StartTime.Minute(), 0, 0, time.Now().UTC().Location())
+			voting.EndTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), voting.EndTime.Hour(), voting.EndTime.Minute(), 0, 0, time.Now().UTC().Location())
+			
 			if vote.Value == "up" {
+				if time.Now().Before(voting.StartTime) {
+					return nil, "", errors.New("Voting has not begun yet")
+				}
+				if time.Now().After(voting.EndTime) {
+					return nil, "", errors.New("Voting has already ended")
+				}
 				if upVoteLocation.Name != "" {
 					// Remove entry from up_votes and decrement vote_count by 1 if user previously upvoted
 					pullField = bson.M{"up_votes": bson.M{"user": vote.User}}
@@ -477,6 +494,12 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 					response = "Up vote added successfully!"
 				}
 			} else if vote.Value == "down" {
+				if time.Now().Before(voting.StartTime) {
+					return nil, "", errors.New("Voting has not begun yet")
+				}
+				if time.Now().After(voting.EndTime) {
+					return nil, "", errors.New("Voting has already ended")
+				}
 				if downVoteLocation.Name != "" {
 					// Remove entry from down_votes and increment vote_count by 1 if user previously downvoted
 					pullField = bson.M{"down_votes": bson.M{"user": vote.User}}
