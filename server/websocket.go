@@ -46,6 +46,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 
 	writeDocumentsToClient(c, "location", claims)
+	writeDocumentsToClient(c, "settings", claims)
 	writeDocumentsToClient(c, "chat", claims)
 	writeDocumentsToClient(c, "user", claims)
 	handleConnection(c, claims.User.ID.Hex())
@@ -148,6 +149,8 @@ func handleConnection(c *websocket.Conn, userID string) {
 				message.Body = "You must be an admin to change user settings!"
 				c.WriteJSON(message)
 			}
+		} else if websocketMessage.Type == "settings" {
+			
 		} else {
 			continue
 		}
@@ -171,6 +174,8 @@ func handleConnection(c *websocket.Conn, userID string) {
 				writeDocumentsToClient(client, "location", claims)
 			} else if websocketMessage.Type == "user" {
 				writeDocumentsToClient(client, "user", claims)
+			} else if websocketMessage.Type == "settings" {
+				writeDocumentsToClient(client, "settings", claims)
 			}
 		}
 	}
@@ -349,16 +354,19 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 	filter := bson.M{}
 	update := bson.M{}
 	response := ""
-	if collectionName == "user" {
+	if collectionName == "settings" {
+		
+	} else if collectionName == "user" {
 		user, ok := data.(*User)
 		if ok {
 			document := searchDocumentsForName(collectionName, user.Username)
 			if document == nil {
 				return nil, "", errors.New(user.Username + " not found!")
 			}
-			if document["role"] == "admin" {
+			if (user.Remove || user.LastLogin == (time.Time{})) && document["role"] == "admin" {
 				return nil, "", errors.New("Admin role " + user.Username + " cannot by modified!")
 			}
+
 			if user.Remove {
 				res, err := deleteDocumentByName("user", user.Username)
 				if res.DeletedCount == 1 {
