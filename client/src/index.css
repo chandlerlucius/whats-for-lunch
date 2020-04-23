@@ -210,6 +210,7 @@ a:hover {
 }
 
 .login-message {
+  white-space: pre;
   font-weight: bold;
 }
 
