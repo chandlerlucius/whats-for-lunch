@@ -341,6 +341,9 @@ export const submitFormAsJson = function (form) {
     if (value === 'on' || value === 'true') {
       value = true;
     }
+    if(value.match(/^-{0,1}\d+$/)) {
+      value = parseInt(value);
+    }
     map[key] = value;
   });
   map['type'] = form.action.split('/').pop();
