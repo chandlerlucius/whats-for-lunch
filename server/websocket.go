@@ -6,6 +6,9 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -46,9 +49,11 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 
 	writeDocumentsToClient(c, "location", claims)
-	writeDocumentsToClient(c, "settings", claims)
 	writeDocumentsToClient(c, "chat", claims)
 	writeDocumentsToClient(c, "user", claims)
+	if claims.User.Role == "admin" {
+		writeDocumentsToClient(c, "settings", claims)
+	}
 	handleConnection(c, claims.User.ID.Hex())
 }
 
@@ -138,7 +143,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 			vote.Date = time.Now()
 			vote.User = claims.User.ID
 			updateDocument(c, bytes, vote, "location")
-		}  else if websocketMessage.Type == "user" {
+		} else if websocketMessage.Type == "user" {
 			user := &User{}
 			if claims.User.Role == "admin" {
 				updateDocument(c, bytes, user, "user")
@@ -150,7 +155,17 @@ func handleConnection(c *websocket.Conn, userID string) {
 				c.WriteJSON(message)
 			}
 		} else if websocketMessage.Type == "settings" {
-			
+			if claims.User.Role == "admin" {
+				settings := &Voting{}
+				settings.Name = "voting"
+				updateDocument(c, bytes, settings, "settings")
+			} else {
+				message := Message{}
+				message.Status = http.StatusUnauthorized
+				message.Title = "user"
+				message.Body = "You must be an admin to change voting settings!"
+				c.WriteJSON(message)
+			}
 		} else {
 			continue
 		}
@@ -175,7 +190,9 @@ func handleConnection(c *websocket.Conn, userID string) {
 			} else if websocketMessage.Type == "user" {
 				writeDocumentsToClient(client, "user", claims)
 			} else if websocketMessage.Type == "settings" {
-				writeDocumentsToClient(client, "settings", claims)
+				if claims.User.Role == "admin" {
+					writeDocumentsToClient(client, "settings", claims)
+				}
 			}
 		}
 	}
@@ -355,7 +372,40 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 	update := bson.M{}
 	response := ""
 	if collectionName == "settings" {
-		
+		voting, ok := data.(*Voting)
+		startTime, _ := regexp.MatchString(`^[0-2][0-9]:[0-5][0-9]$`, voting.StartTimeString)
+		endTime, _ := regexp.MatchString(`^[0-2][0-9]:[0-5][0-9]$`, voting.EndTimeString)
+
+		if ok && startTime && endTime {
+			location := time.FixedZone("UTC", voting.TimezoneOffset*60*60)
+			startTimeHours, _ := strconv.Atoi(strings.Split(voting.StartTimeString, ":")[0])
+			startTimeMinutes, _ := strconv.Atoi(strings.Split(voting.StartTimeString, ":")[1])
+			endTimeHours, _ := strconv.Atoi(strings.Split(voting.EndTimeString, ":")[0])
+			endTimeMinutes, _ := strconv.Atoi(strings.Split(voting.EndTimeString, ":")[1])
+
+			voting.StartTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), startTimeHours, startTimeMinutes, 0, 0, location)
+			voting.EndTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), endTimeHours, endTimeMinutes, 0, 0, location)
+			filter = bson.M{"name": voting.Name}
+
+			document := searchDocumentsForName(collectionName, voting.Name)
+			if document["start_time_string"] != voting.StartTimeString {
+				document["start_time_string"] = voting.StartTimeString
+				document["start_time"] = voting.StartTime
+			}
+			if document["end_time_string"] != voting.EndTimeString {
+				document["end_time_string"] = voting.EndTimeString
+				document["end_time"] = voting.EndTime
+			}
+			if document["timezone_offset"] != voting.TimezoneOffset {
+				document["timezone_offset"] = voting.TimezoneOffset
+				document["start_time"] = voting.StartTime
+				document["end_time"] = voting.EndTime
+			}
+			update = bson.M{"$set": document}
+			response = "Settings for " + voting.Name + " updated successfully!"
+		} else {
+			return nil, "", errors.New("Start and end times must be filled in and valid")
+		}
 	} else if collectionName == "user" {
 		user, ok := data.(*User)
 		if ok {
@@ -378,9 +428,9 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 
 			filter = bson.M{"_id": document["_id"]}
 			if user.LastLogin == (time.Time{}) {
-				update = bson.M{"$set" : bson.M{"enabled": user.Enabled}}
+				update = bson.M{"$set": bson.M{"enabled": user.Enabled}}
 			} else {
-				update = bson.M{"$set" : bson.M{"last_seen": user.LastLogin}}
+				update = bson.M{"$set": bson.M{"last_seen": user.LastLogin}}
 			}
 			response = "User " + user.Username + " updated successfully!"
 		}
@@ -516,7 +566,7 @@ func searchDocumentsForName(collectionName string, name string) bson.M {
 		if err1 != nil {
 			log.Print(err1)
 		}
-		if result["name"] == name || result["username"] == name{
+		if result["name"] == name || result["username"] == name {
 			return result
 		}
 	}
