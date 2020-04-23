@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -136,6 +137,25 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		var userRole string
 		var userEnabled bool
 		if usersEmpty {
+			offset, err := strconv.Atoi(r.FormValue("offset"))
+			location := time.FixedZone("UTC"+r.FormValue("offset"), offset*60*60)
+
+			settings := &Settings{}
+			settings.VotingTimezoneOffset = offset
+			settings.VotingStartTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 6, 0, 0, 0, location)
+			settings.VotingEndTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 12, 0, 0, 0, location)
+
+			res, err := insertDataIntoDatabase(&settings, "settings")
+			if err != nil {
+				status := http.StatusInternalServerError
+				sendMessageAndLogDefaultError(w, status, err)
+				return
+			}
+			if res != nil {
+				user.ID = res.InsertedID.(primitive.ObjectID)
+				info := "Added to DB succesffully: " + settings.VotingStartTime.String() + " | id:" + res.InsertedID.(primitive.ObjectID).String()
+				log.Print(info)
+			}
 			userRole = "admin"
 			userEnabled = true
 		} else {
@@ -143,7 +163,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			userEnabled = false
 		}
 		user = User{primitive.NewObjectID(), time.Now(), time.Now(), userRole, count, userEnabled, username, hash, false}
-		res, err := insertUserIntoDatabase(&user, "user")
+		res, err := insertDataIntoDatabase(&user, "user")
 		if err != nil {
 			status := http.StatusInternalServerError
 			sendMessageAndLogDefaultError(w, status, err)
@@ -195,12 +215,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func insertUserIntoDatabase(user *User, collection string) (*mongo.InsertOneResult, error) {
+func insertDataIntoDatabase(data interface{}, collection string) (*mongo.InsertOneResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	mongoCollection := mongoClient.Database(database).Collection(collection)
-	res, err := mongoCollection.InsertOne(ctx, user)
+	res, err := mongoCollection.InsertOne(ctx, data)
 	return res, err
 }
 
@@ -263,6 +283,13 @@ func findNextUserCount() int {
 		count++
 	}
 	return count
+}
+
+// Settings is a settings object
+type Settings struct {
+	VotingTimezoneOffset int       `json:"voting_timezone_offset" bson:"voting_timezone_offset"`
+	VotingStartTime      time.Time `json:"voting_start_time" bson:"voting_start_time"`
+	VotingEndTime        time.Time `json:"voting_end_time" bson:"voting_end_time"`
 }
 
 // User is a simple user auth object
