@@ -1,5 +1,77 @@
 [
     {
+        "offset": -12,
+        "desc": "GMT-12",
+        "abbr": "IDLW",
+        "name": "International Date Line West"
+    },
+    {
+        "offset": -11,
+        "desc": "GMT-11",
+        "abbr": "NT",
+        "name": "Nome Time"
+    },
+    {
+        "offset": -10,
+        "desc": "GMT-10",
+        "abbr": "HST",
+        "name": "Hawaii Standard Time"
+    },
+    {
+        "offset": -9,
+        "desc": "GMT-9",
+        "abbr": "AKST",
+        "name": "Alaska Standard Time"
+    },
+    {
+        "offset": -8,
+        "desc": "GMT-8",
+        "abbr": "PST",
+        "name": "Pacific Standard Time"
+    },
+    {
+        "offset": -7,
+        "desc": "GMT-7",
+        "abbr": "MST",
+        "name": "Mountain Standard Time"
+    },
+    {
+        "offset": -6,
+        "desc": "GMT-6",
+        "abbr": "CST",
+        "name": "Central Standard Time"
+    },
+    {
+        "offset": -5,
+        "desc": "GMT-5",
+        "abbr": "EST",
+        "name": "Eastern Standard Time"
+    },
+    {
+        "offset": -4,
+        "desc": "GMT-4",
+        "abbr": "AST",
+        "name": "Atlantic Standard Time"
+    },
+    {
+        "offset": -3,
+        "desc": "GMT-3",
+        "abbr": "ART",
+        "name": "Argentina Time"
+    },
+    {
+        "offset": -2,
+        "desc": "GMT-2",
+        "abbr": "AT",
+        "name": "Azores Time"
+    },
+    {
+        "offset": -1,
+        "desc": "GMT-1",
+        "abbr": "WAT",
+        "name": "West Africa Time"
+    },
+    {
         "offset": 0,
         "desc": "GMT+0",
         "abbr": "GMT",
@@ -76,77 +148,5 @@
         "desc": "GMT+12",
         "abbr": "NZST",
         "name": "New Zealand Standard Time"
-    },
-    {
-        "offset": -12,
-        "desc": "GMT-12",
-        "abbr": "IDLW",
-        "name": "International Date Line West"
-    },
-    {
-        "offset": -11,
-        "desc": "GMT-11",
-        "abbr": "NT",
-        "name": "Nome Time"
-    },
-    {
-        "offset": -10,
-        "desc": "GMT-10",
-        "abbr": "HST",
-        "name": "Hawaii Standard Time"
-    },
-    {
-        "offset": -9,
-        "desc": "GMT-9",
-        "abbr": "AKST",
-        "name": "Alaska Standard Time"
-    },
-    {
-        "offset": -8,
-        "desc": "GMT-8",
-        "abbr": "PST",
-        "name": "Pacific Standard Time"
-    },
-    {
-        "offset": -7,
-        "desc": "GMT-7",
-        "abbr": "MST",
-        "name": "Mountain Standard Time"
-    },
-    {
-        "offset": -6,
-        "desc": "GMT-6",
-        "abbr": "CST",
-        "name": "Central Standard Time"
-    },
-    {
-        "offset": -5,
-        "desc": "GMT-5",
-        "abbr": "EST",
-        "name": "Eastern Standard Time"
-    },
-    {
-        "offset": -4,
-        "desc": "GMT-4",
-        "abbr": "AST",
-        "name": "Atlantic Standard Time"
-    },
-    {
-        "offset": -3,
-        "desc": "GMT-3",
-        "abbr": "ART",
-        "name": "Argentina Time"
-    },
-    {
-        "offset": -2,
-        "desc": "GMT-2",
-        "abbr": "AT",
-        "name": "Azores Time"
-    },
-    {
-        "offset": -1,
-        "desc": "GMT-1",
-        "abbr": "WAT",
-        "name": "West Africa Time"
     }
 ]
