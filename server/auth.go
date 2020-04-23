@@ -44,7 +44,7 @@ func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	usersEmpty := checkIfCollectionEmpty("user")
 	if usersEmpty {
 		title := "Failure"
-		body := "Welcome to What's For Lunch! Please create an admin user to begin."
+		body := "Welcome to What's For Lunch!\n Please create an admin user to begin."
 		message := Message{http.StatusNotFound, title, body, "", 0}
 		sendMessageAndLogError(w, message, err)
 		return
@@ -137,13 +137,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		var userRole string
 		var userEnabled bool
 		if usersEmpty {
-			offset, err := strconv.Atoi(r.FormValue("offset"))
-			location := time.FixedZone("UTC"+r.FormValue("offset"), offset*60*60)
+			offset, err := strconv.Atoi(r.FormValue("timezone_offset"))
+			location := time.FixedZone("UTC"+r.FormValue("timezone_offset"), offset*60*60)
 
-			settings := &Settings{}
-			settings.VotingTimezoneOffset = offset
-			settings.VotingStartTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 6, 0, 0, 0, location)
-			settings.VotingEndTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 12, 0, 0, 0, location)
+			settings := &Voting{}
+			settings.Name = "voting"
+			settings.TimezoneOffset = offset
+			settings.StartTimeString = "06:00"
+			settings.EndTimeString = "12:00"
+			settings.StartTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 6, 0, 0, 0, location)
+			settings.EndTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 12, 0, 0, 0, location)
 
 			res, err := insertDataIntoDatabase(&settings, "settings")
 			if err != nil {
@@ -153,7 +156,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			if res != nil {
 				user.ID = res.InsertedID.(primitive.ObjectID)
-				info := "Added to DB succesffully: " + settings.VotingStartTime.String() + " | id:" + res.InsertedID.(primitive.ObjectID).String()
+				info := "Added to DB succesffully: Settings for " + settings.Name  + " | id:" + res.InsertedID.(primitive.ObjectID).String()
 				log.Print(info)
 			}
 			userRole = "admin"
@@ -179,7 +182,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	success := checkPasswordHash(password, user.Password)
 	if success == true {
 		if !user.Enabled {
-			message := Message{http.StatusUnauthorized, "Failure", "User created, but contact the admin to enable your username.", "", 0}
+			message := Message{http.StatusUnauthorized, "Failure", "User created, but disabled.\n Contact the admin to enable your username.", "", 0}
 			sendMessageAndLogError(w, message, nil)
 			return
 		}
@@ -285,11 +288,14 @@ func findNextUserCount() int {
 	return count
 }
 
-// Settings is a settings object
-type Settings struct {
-	VotingTimezoneOffset int       `json:"voting_timezone_offset" bson:"voting_timezone_offset"`
-	VotingStartTime      time.Time `json:"voting_start_time" bson:"voting_start_time"`
-	VotingEndTime        time.Time `json:"voting_end_time" bson:"voting_end_time"`
+// Voting holds the settings for voting
+type Voting struct {
+	Name            string    `json:"name" bson:"name"`
+	StartTimeString string    `json:"start_time_string" bson:"start_time_string"`
+	EndTimeString   string    `json:"end_time_string" bson:"end_time_string"`
+	TimezoneOffset  int       `json:"timezone_offset" bson:"timezone_offset"`
+	StartTime       time.Time `json:"start_time" bson:"start_time"`
+	EndTime         time.Time `json:"end_time" bson:"end_time"`
 }
 
 // User is a simple user auth object
