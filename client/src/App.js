@@ -95,6 +95,9 @@ class App extends React.Component {
         } else if (json.type === 'user') {
           ReactDOM.render(<Users users={json.body} />, document.querySelector('.users-container'));
         } else if (json.type === 'settings') {
+          if(document.querySelector('.settings-container').classList.contains('hidden')) {
+            document.querySelector('.settings').classList.remove('hidden');
+          }
           ReactDOM.render(<Settings settings={json.body} />, document.querySelector('.settings-container'));
         } else if (json.type === 'location') {
           ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
@@ -194,7 +197,7 @@ class App extends React.Component {
             <h3>Users</h3>
             <FaArrowRight />
           </div>
-          <div className="button flex-center-vertical settings" onClick={toggleToolsMenu}>
+          <div className="button flex-center-vertical settings hidden" onClick={toggleToolsMenu}>
             <h3>Settings</h3>
             <FaArrowRight />
           </div>
@@ -338,11 +341,11 @@ export const submitFormAsJson = function (form) {
   const map = {};
   const formData = new FormData(form);
   formData.forEach(function (value, key) {
-    if (value === 'on' || value === 'true') {
-      value = true;
-    }
     if(value.match(/^-{0,1}\d+$/)) {
       value = parseInt(value);
+    }
+    if (value === 'on' || value === 'true') {
+      value = true;
     }
     map[key] = value;
   });
