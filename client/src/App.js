@@ -6,7 +6,8 @@ import Toast, { toastCloseTimeout } from './Toast';
 import Users from './Users';
 import Login from './Login';
 import Search from './Search';
-import Details from './Details'
+import Details from './Details';
+import Settings from './Settings';
 import GoogleMap from './Map';
 import Suggestions from './Suggestions';
 import { MdChat } from 'react-icons/md';
@@ -55,7 +56,7 @@ class App extends React.Component {
       socket.onclose = function (event) {
         if (event.code === 4001) {
           ReactDOM.render(<Login message={event.reason} color="var(--failure-color)" />, document.querySelector('.root'));
-        } else if(event.code !== 4002) {
+        } else if (event.code !== 4002) {
           setSocketTimeout();
         }
       };
@@ -93,6 +94,8 @@ class App extends React.Component {
           ReactDOM.render(<Chat messages={json.body} />, document.querySelector('.chat-container'));
         } else if (json.type === 'user') {
           ReactDOM.render(<Users users={json.body} />, document.querySelector('.users-container'));
+        } else if (json.type === 'settings') {
+          ReactDOM.render(<Settings settings={json.body} />, document.querySelector('.settings-container'));
         } else if (json.type === 'location') {
           ReactDOM.render(<Suggestions locations={json.body} />, document.querySelector('.suggestions-container'));
           if (!document.querySelector('.details-div')) {
@@ -280,7 +283,7 @@ const openChatOrTools = function (event) {
 
 export const toggleToolsMenu = function (event) {
   const target = event.currentTarget;
-  if(target.classList.contains('back')) {
+  if (target.classList.contains('back')) {
     document.querySelector('.back').classList.add('hidden');
     document.querySelector('.users-container').classList.add('hidden');
     document.querySelector('.settings-container').classList.add('hidden');
@@ -288,9 +291,9 @@ export const toggleToolsMenu = function (event) {
     document.querySelector('.settings').classList.remove('hidden');
   } else {
     let clazz;
-    if(target.classList.contains('users')) {
+    if (target.classList.contains('users')) {
       clazz = '.users-container';
-    } else if(target.classList.contains('settings')) {
+    } else if (target.classList.contains('settings')) {
       clazz = '.settings-container';
     }
     const element = document.querySelector(clazz);
@@ -326,7 +329,7 @@ const backgroundWebsocket = function () {
   sendWebsocketMessage(map);
 }
 
-export const submitFormWithEvent = function(event) {
+export const submitFormWithEvent = function (event) {
   event.preventDefault();
   submitFormAsJson(event.target);
 }
@@ -335,7 +338,7 @@ export const submitFormAsJson = function (form) {
   const map = {};
   const formData = new FormData(form);
   formData.forEach(function (value, key) {
-    if(value === 'on' || value === 'true') {
+    if (value === 'on' || value === 'true') {
       value = true;
     }
     map[key] = value;
