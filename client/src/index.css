@@ -241,6 +241,10 @@ nav,
   transition: margin 1s;
 }
 
+.voting-message {
+  text-align: center;
+}
+
 .vote-form>div:first-child,
 .search-form>div:first-child {
   justify-content: flex-end;
