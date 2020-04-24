@@ -113,8 +113,8 @@ class App extends React.Component {
             element.style.color = 'var(--user-color-offline)';
             element.innerHTML = '● Offline';
           });
-          if (json.body) {
-            json.body.forEach(function (user) {
+          if (json.body.users) {
+            json.body.users.forEach(function (user) {
               document.querySelectorAll('.user-status-' + user.id).forEach(function (element) {
                 element.style.color = 'var(--user-color-' + user.status + ')';
                 element.title = '● ' + user.status.charAt(0).toUpperCase() + user.status.slice(1);
@@ -128,6 +128,14 @@ class App extends React.Component {
                 element.innerHTML = formatDate(user.last_seen)
               });
             });
+          }
+          if(json.body.message) {
+            document.querySelector('.voting-message').innerHTML = json.body.message;
+            if(json.body.progress === 1) {
+              document.querySelector('.voting-message').style.color = 'var(--success-color)';
+            } else {
+              document.querySelector('.voting-message').style.color = 'var(--failure-color)';
+            }
           }
           resetBackgroundTimeout(10000);
         }
@@ -162,7 +170,7 @@ class App extends React.Component {
   }
 
   logout() {
-    ReactDOM.render(<Login message='Enter username and password to begin.' color='var(--secondary-color)' />, document.querySelector('.root'));
+    ReactDOM.render(<Login message='Create or enter username and password to begin.' color='var(--secondary-color)' />, document.querySelector('.root'));
   }
 
   render() {
@@ -215,6 +223,7 @@ class App extends React.Component {
         </form>
       </div>,
       <div key="center" className="center">
+        <h3 className="voting-message"> </h3>
         <div className="suggestions-container"></div>
         <div className="search-container"></div>
         <div className="map-container flex"></div>
@@ -358,7 +367,7 @@ export const sendWebsocketMessage = function (map) {
     const json = JSON.stringify(map);
     socket.send(json);
   } catch (error) {
-    socket.close(4001, "Error connecting to server. Try again later.");
+    socket.close(4001, "Error connecting to server. \nTry again later.");
   }
 }
 
