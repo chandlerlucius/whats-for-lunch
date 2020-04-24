@@ -111,16 +111,16 @@ func handleConnection(c *websocket.Conn, userID string) {
 				clientOfflineUserIDs.Delete(claims.User.ID.Hex())
 				clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 			}
-			
+
 			voting := Voting{}
 			settings := searchDocumentsForName("settings", "voting")
 			bsonBytes, _ := bson.Marshal(settings)
 			bson.Unmarshal(bsonBytes, &voting)
-			
+
 			now := time.Now().UTC()
 			voting.StartTime = time.Date(now.Year(), now.Month(), now.Day(), voting.StartTime.Hour(), voting.StartTime.Minute(), 0, 0, now.Location())
 			voting.EndTime = time.Date(now.Year(), now.Month(), now.Day(), voting.EndTime.Hour(), voting.EndTime.Minute(), 0, 0, now.Location())
-			
+
 			var message string
 			var progress int
 			if now.Before(voting.StartTime) {
@@ -134,12 +134,12 @@ func handleConnection(c *websocket.Conn, userID string) {
 				progress = 1
 			} else {
 				voting.StartTime = voting.StartTime.AddDate(0, 0, 1)
-				duration := voting.StartTime.Sub(now) 
+				duration := voting.StartTime.Sub(now)
 				message = "Voting begins in " + fmtDuration(duration) + " (" + voting.StartTimeString + ")"
 				progress = 0
 			}
 
-			results := bson.M{"users" : users, "message" : message, "progress" : progress}
+			results := bson.M{"users": users, "message": message, "progress": progress}
 			var body bson.M = bson.M{"type": "background", "token": clientTokens[c], "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
 			err3 := c.WriteJSON(body)
 			if err3 != nil {
@@ -497,12 +497,12 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 			if err != nil {
 				log.Print(err)
 			}
-			
+
 			voting := Voting{}
 			settings := searchDocumentsForName("settings", "voting")
 			bsonBytes, _ := bson.Marshal(settings)
 			bson.Unmarshal(bsonBytes, &voting)
-			
+
 			if vote.Value == "up" {
 				if time.Now().Before(voting.StartTime) {
 					return nil, "", errors.New("Voting has not yet begun")
@@ -691,8 +691,8 @@ type Location struct {
 	URL              string             `json:"url"`
 	Photo            string             `json:"photo"`
 	PlaceID          string             `json:"place_id" bson:"place_id"`
-	UserRatingsTotal string             `json:"user_ratings_total" bson:"user_ratings_total"`
-	PriceLevel       string             `json:"price_level" bson:"price_level"`
+	UserRatingsTotal int                `json:"user_ratings_total" bson:"user_ratings_total"`
+	PriceLevel       int                `json:"price_level" bson:"price_level"`
 	FormattedAddress string             `json:"formatted_address" bson:"formatted_address"`
 	UpVotes          []Vote             `json:"up_votes" bson:"up_votes"`
 	DownVotes        []Vote             `json:"down_votes" bson:"down_votes"`
