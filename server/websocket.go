@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -85,12 +86,12 @@ func handleConnection(c *websocket.Conn, userID string) {
 		}
 
 		if websocketMessage.Type == "background" {
-			var results []bson.M
+			var users []bson.M
 			clientOfflineUserIDs.Range(func(key interface{}, value interface{}) bool {
 				date := value.(time.Time)
 				var status = "offline"
-				var result = bson.M{"id": key, "last_seen": date, "status": status}
-				results = append(results, result)
+				var user = bson.M{"id": key, "last_seen": date, "status": status}
+				users = append(users, user)
 				return true
 			})
 			clientUserIDs.Range(func(key interface{}, value interface{}) bool {
@@ -101,8 +102,8 @@ func handleConnection(c *websocket.Conn, userID string) {
 				} else {
 					status = "active"
 				}
-				var result = bson.M{"id": key, "last_seen": date, "status": status}
-				results = append(results, result)
+				var user = bson.M{"id": key, "last_seen": date, "status": status}
+				users = append(users, user)
 				return true
 			})
 			if websocketMessage.Active {
@@ -110,7 +111,35 @@ func handleConnection(c *websocket.Conn, userID string) {
 				clientOfflineUserIDs.Delete(claims.User.ID.Hex())
 				clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 			}
+			
+			voting := Voting{}
+			settings := searchDocumentsForName("settings", "voting")
+			bsonBytes, _ := bson.Marshal(settings)
+			bson.Unmarshal(bsonBytes, &voting)
+			
+			now := time.Now().UTC()
+			voting.StartTime = time.Date(now.Year(), now.Month(), now.Day(), voting.StartTime.Hour(), voting.StartTime.Minute(), 0, 0, now.Location())
+			voting.EndTime = time.Date(now.Year(), now.Month(), now.Day(), voting.EndTime.Hour(), voting.EndTime.Minute(), 0, 0, now.Location())
+			
+			var message string
+			var progress int
+			if now.Before(voting.StartTime) {
+				log.Print(voting.StartTime.String() + " " + now.String())
+				duration := time.Until(voting.StartTime)
+				message = "Voting begins in " + fmtDuration(duration) + " (" + voting.StartTimeString + ")"
+				progress = 0
+			} else if now.Before(voting.EndTime) {
+				duration := time.Until(voting.EndTime)
+				message = "Voting ends in " + fmtDuration(duration) + " (" + voting.EndTimeString + ")"
+				progress = 1
+			} else {
+				voting.StartTime = voting.StartTime.AddDate(0, 0, 1)
+				duration := voting.StartTime.Sub(now) 
+				message = "Voting begins in " + fmtDuration(duration) + " (" + voting.StartTimeString + ")"
+				progress = 0
+			}
 
+			results := bson.M{"users" : users, "message" : message, "progress" : progress}
 			var body bson.M = bson.M{"type": "background", "token": clientTokens[c], "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
 			err3 := c.WriteJSON(body)
 			if err3 != nil {
@@ -196,6 +225,15 @@ func handleConnection(c *websocket.Conn, userID string) {
 			}
 		}
 	}
+}
+
+func fmtDuration(d time.Duration) string {
+	h := d / time.Hour
+	d -= h * time.Hour
+	m := d / time.Minute
+	d -= m * time.Minute
+	s := d / time.Second
+	return fmt.Sprintf("%02dh %02dm %02ds", h, m, s)
 }
 
 func writeDocumentsToClient(c *websocket.Conn, collectionName string, claims *Claims) {
@@ -383,8 +421,9 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 			endTimeHours, _ := strconv.Atoi(strings.Split(voting.EndTimeString, ":")[0])
 			endTimeMinutes, _ := strconv.Atoi(strings.Split(voting.EndTimeString, ":")[1])
 
-			voting.StartTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), startTimeHours, startTimeMinutes, 0, 0, location)
-			voting.EndTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), endTimeHours, endTimeMinutes, 0, 0, location)
+			now := time.Now().In(location)
+			voting.StartTime = time.Date(now.Year(), now.Month(), now.Day(), startTimeHours, startTimeMinutes, 0, 0, now.Location())
+			voting.EndTime = time.Date(now.Year(), now.Month(), now.Day(), endTimeHours, endTimeMinutes, 0, 0, now.Location())
 			filter = bson.M{"name": voting.Name}
 
 			if voting.StartTime.After(voting.EndTime) {
@@ -463,12 +502,10 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 			settings := searchDocumentsForName("settings", "voting")
 			bsonBytes, _ := bson.Marshal(settings)
 			bson.Unmarshal(bsonBytes, &voting)
-			voting.StartTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), voting.StartTime.Hour(), voting.StartTime.Minute(), 0, 0, time.Now().UTC().Location())
-			voting.EndTime = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), voting.EndTime.Hour(), voting.EndTime.Minute(), 0, 0, time.Now().UTC().Location())
 			
 			if vote.Value == "up" {
 				if time.Now().Before(voting.StartTime) {
-					return nil, "", errors.New("Voting has not begun yet")
+					return nil, "", errors.New("Voting has not yet begun")
 				}
 				if time.Now().After(voting.EndTime) {
 					return nil, "", errors.New("Voting has already ended")
