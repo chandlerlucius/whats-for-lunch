@@ -1,7 +1,7 @@
 import React from 'react'
 import { MdMyLocation } from 'react-icons/md'
 import { submitFormWithEvent } from './App';
-import { getLocationAndCenterMap } from './Map';
+import { getLocationCenterAndClearMap } from './Map';
 
 class Search extends React.Component {
 
@@ -21,7 +21,7 @@ class Search extends React.Component {
         </div>
         <div>
           <button className="location-search-button" title="Search">Search</button>
-          <button className="location-search-button" title="Center Map" onClick={getLocationAndCenterMap}><MdMyLocation /></button>
+          <button className="location-search-button" title="Center and Clear Map" onClick={getLocationCenterAndClearMap}><MdMyLocation /></button>
         </div>
       </div>,
     ]
