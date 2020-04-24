@@ -42,7 +42,11 @@ class Details extends React.Component {
                 :
                 ""
               }
-              <h2 key="detail-name">{this.props.place.name}</h2>
+              {!this.props.window ?
+                <h2 key="detail-name">{this.props.place.name}</h2>
+                :
+                <h3 key="detail-name">{this.props.place.name}</h3>
+              }
               <RestaurantDetails place={this.props.place} />
               <div key="detail-address" className="flex-center-vertical">
                 <img className="detail-icon" alt="Address" src="//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png" />
@@ -52,7 +56,7 @@ class Details extends React.Component {
             :
             <div>
               <h1>{this.props.place.name}</h1>
-              <br/>
+              <br />
               <h3>Nothing but a name...</h3>
             </div>
           }
