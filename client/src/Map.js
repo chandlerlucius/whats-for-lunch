@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Details from './Details'
 
-let map, places, infoWindow;
+let map;
+let markers = [];
 class Map extends React.Component {
   render() {
     return [
@@ -17,8 +18,8 @@ class Map extends React.Component {
   }
 
   componentDidMount() {
-    let markers = [];
-
+    let places, infoWindow;
+    
     function initMap() {
       map = new window.google.maps.Map(document.querySelector('.map'), {
         center: {
@@ -74,18 +75,10 @@ class Map extends React.Component {
             setTimeout(dropMarker(i), i * 100);
             addResult(results[i], i);
           }
+          document.querySelector('.listings-container').style.width = '50%';
           ReactDOM.render(<Details listings={true} />, document.querySelector('.details-container'));
         }
       });
-    }
-
-    function clearMarkers() {
-      for (let i = 0; i < markers.length; i++) {
-        if (markers[i]) {
-          markers[i].setMap(null);
-        }
-      }
-      markers = [];
     }
 
     function dropMarker(i) {
@@ -119,13 +112,6 @@ class Map extends React.Component {
       results.appendChild(tr);
     }
 
-    function clearResults() {
-      const results = document.querySelector('.listings');
-      while (results.childNodes[0]) {
-        results.removeChild(results.childNodes[0]);
-      }
-    }
-
     function showInfoWindow() {
       const marker = this;
       places.getDetails({
@@ -145,16 +131,43 @@ class Map extends React.Component {
   }
 }
 
-export const getLocationAndCenterMap = function() {
+const getLocationAndCenterMap = function() {
   navigator.geolocation.getCurrentPosition(setCenter);
 }
 
-export const setCenter = function(position) {
+const setCenter = function(position) {
   map.setCenter({
     lat: position.coords.latitude,
     lng: position.coords.longitude
   });
   map.setZoom(12);
+}
+
+const clearMap = function() {
+  clearResults();
+  clearMarkers();
+  document.querySelector('.listings-container').style.width = '';
+}
+
+const clearResults = function() {
+  const results = document.querySelector('.listings');
+  while (results.childNodes[0]) {
+    results.removeChild(results.childNodes[0]);
+  }
+}
+
+const clearMarkers = function() {
+  for (let i = 0; i < markers.length; i++) {
+    if (markers[i]) {
+      markers[i].setMap(null);
+    }
+  }
+  markers = [];
+}
+
+export const getLocationCenterAndClearMap = function() {
+  getLocationAndCenterMap();
+  clearMap();
 }
 
 export default Map;
