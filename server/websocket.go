@@ -123,23 +123,28 @@ func handleConnection(c *websocket.Conn, userID string) {
 
 			var message string
 			var progress int
+			var winner interface{}
 			if now.Before(voting.StartTime) {
-				log.Print(voting.StartTime.String() + " " + now.String())
+				log.Print(now.String() + " " + voting.StartTime.String())
 				duration := time.Until(voting.StartTime)
 				message = "Voting begins in " + fmtDuration(duration) + " (" + voting.StartTimeString + ")"
 				progress = 0
+				if duration / time.Hour > 12 {
+					winner = findOneDocument("location")
+				}
 			} else if now.Before(voting.EndTime) {
 				duration := time.Until(voting.EndTime)
 				message = "Voting ends in " + fmtDuration(duration) + " (" + voting.EndTimeString + ")"
 				progress = 1
 			} else {
+				winner = findOneDocument("location")
 				voting.StartTime = voting.StartTime.AddDate(0, 0, 1)
 				duration := voting.StartTime.Sub(now)
 				message = "Voting begins in " + fmtDuration(duration) + " (" + voting.StartTimeString + ")"
 				progress = 0
 			}
 
-			results := bson.M{"users": users, "message": message, "progress": progress}
+			results := bson.M{"users": users, "message": message, "progress": progress, "winner": winner}
 			var body bson.M = bson.M{"type": "background", "token": clientTokens[c], "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
 			err3 := c.WriteJSON(body)
 			if err3 != nil {
@@ -336,6 +341,25 @@ func findDocuments(collectionName string) *mongo.Cursor {
 		log.Print(err)
 	}
 	return cur
+}
+
+func findOneDocument(collectionName string) Location {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	findOptions := options.FindOne()
+	filter := bson.M{}
+	if collectionName == "location" {
+		findOptions.SetSort(bson.M{"vote_count": -1})
+	}
+
+	var location Location
+	collection := mongoClient.Database(database).Collection(collectionName)
+	err := collection.FindOne(ctx, filter, findOptions).Decode(&location)
+	if err != nil {
+		log.Print(err)
+	}
+	return location
 }
 
 func findLocationWithFilter(collectionName string, filter bson.M) (Location, error) {
