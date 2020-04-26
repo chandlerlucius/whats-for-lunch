@@ -137,6 +137,10 @@ class App extends React.Component {
               document.querySelector('.voting-message').style.color = 'var(--failure-color)';
             }
           }
+          if(json.body.winner) {
+            document.querySelector('.full-overlay').classList.remove('hidden')
+            ReactDOM.render(<Details place={json.body.winner} window={true}/>, document.querySelector('.full-overlay'));;
+          }
           resetBackgroundTimeout(10000);
         }
       }
@@ -175,6 +179,7 @@ class App extends React.Component {
 
   render() {
     return [
+      <div key="overlay" className="overlay full-overlay flex-center-horizontal hidden"></div>,
       <nav key="nav" className="flex-center-vertical">
         <div className="flex">
           <h2 className={"button " + TOOLS} onClick={toggleLeftMenu} title="Open Tools"><MdSettings /></h2>
@@ -236,7 +241,7 @@ class App extends React.Component {
         <div className="details-container"></div>
       </div>,
       <div key="toast" className="toast-container flex-center"></div>,
-      <div key="overlay" className="overlay" onClick={this.closeMenu}></div>
+      <div key="side-overlay" className="overlay side-overlay" onClick={this.closeMenu}></div>
     ]
   }
 }
