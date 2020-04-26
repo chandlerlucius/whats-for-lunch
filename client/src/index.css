@@ -55,7 +55,8 @@ button {
   font-family: 'Raleway', sans-serif;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   outline: none;
   border: none;
@@ -131,6 +132,11 @@ a:hover {
 
 .flex {
   display: flex;
+}
+
+.flex-center-horizontal {
+  display: flex;
+  justify-content: center;
 }
 
 .flex-center-vertical {
@@ -212,6 +218,17 @@ a:hover {
 .login-message {
   white-space: pre;
   font-weight: bold;
+}
+
+.full-overlay {
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.9);
 }
 
 nav {
@@ -317,6 +334,10 @@ nav,
   color: #FFF;
   cursor: pointer;
   transition: all 1s;
+}
+
+.listings>tr>td {
+  word-break: break-word;
 }
 
 .listings>tr>td:first-child {
@@ -502,7 +523,7 @@ nav,
   width: fit-content;
 }
 
-.time-form > * {
+.time-form>* {
   margin: 10px;
 }
 
@@ -553,7 +574,7 @@ nav,
   cursor: pointer;
 }
 
-.overlay {
+.side-overlay {
   top: 0;
   width: 0;
   height: 100%;
