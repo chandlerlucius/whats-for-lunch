@@ -18,6 +18,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 import { FaArrowRight } from 'react-icons/fa';
 import { TiThMenuOutline } from 'react-icons/ti';
 import Settings, { timezoneInterval } from './Settings';
+import Directions from './Directions';
 
 let url;
 export let socket;
@@ -129,17 +130,19 @@ class App extends React.Component {
               });
             });
           }
-          if(json.body.message) {
+          if (json.body.message) {
             document.querySelector('.voting-message').innerHTML = json.body.message;
-            if(json.body.progress === 1) {
+            if (json.body.progress === 1) {
               document.querySelector('.voting-message').style.color = 'var(--success-color)';
             } else {
               document.querySelector('.voting-message').style.color = 'var(--failure-color)';
             }
           }
-          if(json.body.winner) {
-            document.querySelector('.full-overlay').classList.remove('hidden')
-            ReactDOM.render(<Details place={json.body.winner} window={true}/>, document.querySelector('.full-overlay'));;
+          const overlay = document.querySelector('.full-overlay');
+          if (json.body.winner && overlay.classList.contains('hidden')) {
+            overlay.classList.remove('hidden')
+            ReactDOM.render(<Details place={json.body.winner} window={true} />, document.querySelector('.winning-container'));
+            ReactDOM.render(<Directions place={json.body.winner} />, document.querySelector('.directions-container'));
           }
           resetBackgroundTimeout(10000);
         }
@@ -179,7 +182,10 @@ class App extends React.Component {
 
   render() {
     return [
-      <div key="overlay" className="overlay full-overlay flex-center-horizontal hidden"></div>,
+      <div key="overlay" className="full-overlay hidden">
+        <div className="winning-container flex-center-horizontal"></div>
+        <div className="directions-container"></div>
+      </div>,
       <nav key="nav" className="flex-center-vertical">
         <div className="flex">
           <h2 className={"button " + TOOLS} onClick={toggleLeftMenu} title="Open Tools"><MdSettings /></h2>
@@ -355,10 +361,13 @@ export const submitFormAsJson = function (form) {
   const map = {};
   const formData = new FormData(form);
   formData.forEach(function (value, key) {
-    if (value.match(/^-{0,1}\d+$/)) {
+    if (value.match(/^-{0,1}\d+[.]\d+$/)) {
+      value = parseFloat(value);
+    }
+    else if (value.match(/^-{0,1}\d+$/)) {
       value = parseInt(value);
     }
-    if (value === 'on' || value === 'true') {
+    else if (value === 'on' || value === 'true') {
       value = true;
     }
     map[key] = value;
