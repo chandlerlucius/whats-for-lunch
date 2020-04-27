@@ -33,6 +33,14 @@ class Details extends React.Component {
       if (this.props.place.photos) {
         photo = this.props.place.photos[0].getUrl();
       }
+      let lat = this.props.place.lat;
+      if(!lat && this.props.place.geometry) {
+        lat = this.props.place.geometry.location.lat();
+      }
+      let lng = this.props.place.lng;
+      if(!lng && this.props.place.geometry) {
+        lng = this.props.place.geometry.location.lng();
+      }
       return (
         <div className="details-div">
           {this.props.place.place_id !== "" ?
@@ -64,6 +72,8 @@ class Details extends React.Component {
             <div>
               <form key="detail-form" method="POST" action="location" onSubmit={submitFormWithEvent} className="location-form">
                 <input type="hidden" name="name" value={this.props.place.name}></input>
+                <input type="hidden" name="lat" value={lat}></input>
+                <input type="hidden" name="lng" value={lng}></input>
                 <input type="hidden" name="place_id" value={this.props.place.place_id}></input>
                 <input type="hidden" name="rating" value={this.props.place.rating}></input>
                 <input type="hidden" name="user_ratings_total" value={this.props.place.user_ratings_total}></input>
