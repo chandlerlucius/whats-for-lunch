@@ -324,7 +324,13 @@ nav,
   background: var(--menu-color);
 }
 
-.map {
+.directions-container {
+  width: 75%;
+  height: 400px;
+  margin: auto;
+}
+
+.map, .directions {
   width: 100%;
   height: 100%;
 }
