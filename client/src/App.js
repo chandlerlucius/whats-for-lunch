@@ -150,7 +150,7 @@ class App extends React.Component {
             } else {
               displayWinnerOverlay(json);
             }
-          } else if(!json.body.winner){
+          } else if (!json.body.winner) {
             closeWinnerOverlay();
             localStorage.removeItem('winner-overlay-closed');
           }
@@ -183,6 +183,13 @@ class App extends React.Component {
       event.preventDefault();
       const form = event.target.closest('form');
       submitFormAsJson(form);
+    }
+  }
+
+  removeUnreadDiv() {
+    const unread = document.querySelector('.unread-div');
+    if (unread) {
+      unread.parentNode.removeChild(unread);
     }
   }
 
@@ -241,14 +248,14 @@ class App extends React.Component {
         </div>
         <div className="chat-container"></div>
         <form method="POST" action="chat" onSubmit={submitFormWithEvent} className="chat-form">
-          <textarea name="message" className="chat-textarea" rows={4} required={true} placeholder="Send a message..." onKeyPress={this.submitWhenEnterPressed}></textarea>
+          <textarea name="message" className="chat-textarea" rows={4} required={true} placeholder="Send a message..." onKeyPress={this.submitWhenEnterPressed} onFocus={this.removeUnreadDiv}></textarea>
           <button type="submit">Send</button>
         </form>
       </div>,
       <div key="center" className="center">
         <div className="flex-center-horizontal">
           <h3 className="voting-message"> </h3>
-          <h3 className="winner-button hidden" title="View current winner" onClick={displayWinnerOverlay}><GiTrophy/></h3>
+          <h3 className="winner-button hidden" title="View current winner" onClick={displayWinnerOverlay}><GiTrophy /></h3>
         </div>
         <div className="suggestions-container"></div>
         <div className="search-container"></div>
@@ -348,20 +355,20 @@ export const toggleToolsMenu = function (event) {
   }
 }
 
-const displayWinnerOverlay = function() {
+const displayWinnerOverlay = function () {
   const overlay = document.querySelector('.full-overlay');
   document.querySelector('.winner-text').classList.remove('hidden');
   document.querySelector('.winner-button').classList.remove('hidden');
   overlay.classList.remove('hidden-with-z-index');
   overlay.classList.add('visible-with-z-index');
-  setTimeout(function() {
+  setTimeout(function () {
     document.querySelector('.winner-text').classList.add('hidden');
     document.querySelector('.winning-container').classList.remove('hidden-with-z-index');
     document.querySelector('.directions-container').classList.remove('hidden-with-z-index');
   }, 3000);
 }
 
-const closeWinnerOverlay = function() {
+const closeWinnerOverlay = function () {
   const overlay = document.querySelector('.full-overlay');
   overlay.classList.add('hidden-with-z-index');
   overlay.classList.remove('visible-with-z-index');
@@ -463,11 +470,6 @@ export const handleNewData = function (type, newData, oldData) {
       handleNotifications(type, data, CHANGE);
     });
   }
-  if (type === CHAT) {
-    newDataArray.forEach(function (data) {
-      handleHighlighting(type, data);
-    });
-  }
   return newDataArray;
 }
 
@@ -481,7 +483,7 @@ const handleNotifications = function (type, data, operation) {
       } else if (type === LOCATION) {
         showNotification('New Location: \n' + data.name, '@' + data.user_name + ' added it!', 'location-icon.png');
       }
-      handleHighlighting(data);
+      handleHighlighting(type, data);
       break;
     case REMOVE:
       notificationCounts.delete(data._id);
@@ -494,7 +496,7 @@ const handleNotifications = function (type, data, operation) {
       if (type === LOCATION) {
         showNotification('Updated Location: \n' + data.name, '@' + data.user_name + ' voted!', 'location-icon.png');
       }
-      handleHighlighting(data);
+      handleHighlighting(type, data);
       break;
     default:
       break;
@@ -504,25 +506,27 @@ const handleNotifications = function (type, data, operation) {
   audio.play();
 }
 
-const handleHighlighting = function (data) {
+const handleHighlighting = function (type, data) {
   if (!document.hasFocus()) {
     window.addEventListener('focus', function () {
-      highlightWhenElementScrolledTo(data);
+      highlightWhenElementScrolledTo(type, data);
     }, { once: true });
   } else {
-    highlightWhenElementScrolledTo(data);
+    highlightWhenElementScrolledTo(type, data);
   }
 }
 
-const highlightWhenElementScrolledTo = function (data) {
+const highlightWhenElementScrolledTo = function (type, data) {
   const observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (entry.isIntersecting) {
         const element = entry.target;
-        element.style.background = 'var(--update-color)';
-        setTimeout(function () {
-          element.style.background = '';
-        }, 3000);
+        if (type !== CHAT) {
+          element.style.background = 'var(--update-color)';
+          setTimeout(function () {
+            element.style.background = '';
+          }, 3000);
+        }
         observer.unobserve(entry.target);
         notificationCounts.delete(data._id);
         updateTitle();
