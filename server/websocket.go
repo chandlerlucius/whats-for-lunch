@@ -113,7 +113,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 			}
 
 			now := time.Now().UTC()
-			voting := getVotingSettings(now)
+			voting, now := getVotingSettings(now)
 
 			var message string
 			var progress int
@@ -232,21 +232,21 @@ func handleConnection(c *websocket.Conn, userID string) {
 	}
 }
 
-func getVotingSettings(now time.Time) Voting {
+func getVotingSettings(now time.Time) (Voting, time.Time) {
 	voting := Voting{}
 	settings := searchDocumentsForName("settings", "voting")
 	bsonBytes, _ := bson.Marshal(settings)
 	bson.Unmarshal(bsonBytes, &voting)
 
-	day := now
-	if voting.EndTime.Day()-voting.StartTime.Day() > 0 {
-		day = day.Add(-24 * time.Hour)
-	}
+	locale := time.FixedZone("UTC", voting.TimezoneOffset*60*60)
+	voting.StartTime = voting.StartTime.In(locale)
+	voting.EndTime = voting.EndTime.In(locale)
+	now = now.In(locale)
 
-	voting.StartTime = time.Date(now.Year(), now.Month(), day.Day(), voting.StartTime.Hour(), voting.StartTime.Minute(), 0, 0, now.Location())
-	voting.EndTime = time.Date(now.Year(), now.Month(), now.Day(), voting.EndTime.Hour(), voting.EndTime.Minute(), 0, 0, now.Location())
+	voting.StartTime = time.Date(now.Year(), now.Month(), now.Day(), voting.StartTime.Hour(), voting.StartTime.Minute(), 0, 0, locale)
+	voting.EndTime = time.Date(now.Year(), now.Month(), now.Day(), voting.EndTime.Hour(), voting.EndTime.Minute(), 0, 0, locale)
 	log.Print(now.String() + " - " + voting.StartTime.String() + " - " + voting.EndTime.String())
-	return voting
+	return voting, now
 }
 
 func fmtDuration(d time.Duration) string {
@@ -269,6 +269,7 @@ func writeDocumentsToClient(c *websocket.Conn, collectionName string, claims *Cl
 		if err1 != nil {
 			log.Print(err1)
 		}
+		delete(result, "password")
 		result = replaceUserIDWithUserDetails(result, claims)
 		if result["up_votes"] != nil {
 			result = fixVoteJSON(result, "up_votes", claims)
@@ -344,7 +345,8 @@ func findDocuments(collectionName string) *mongo.Cursor {
 		findOptions.SetSort(bson.M{"date": -1})
 	} else if collectionName == "location" {
 		now := time.Now().UTC()
-		voting := getVotingSettings(now)
+		voting, now := getVotingSettings(now)
+
 		start := voting.StartTime
 		end := voting.EndTime
 		if now.After(voting.EndTime) {
@@ -355,8 +357,6 @@ func findDocuments(collectionName string) *mongo.Cursor {
 			"date": bson.M{
 				"$gt": start,
 				"$lt": end,
-				// "$gt": time.Now().Add(-12 * time.Hour),
-				// "$lt": time.Now().Add(12 * time.Hour),
 			},
 		}
 		findOptions.SetSort(bson.M{"vote_count": -1})
@@ -378,13 +378,11 @@ func findOneDocument(collectionName string) (Location, error) {
 	filter := bson.M{}
 	if collectionName == "location" {
 		now := time.Now().UTC()
-		voting := getVotingSettings(now)
+		voting, now := getVotingSettings(now)
 		filter = bson.M{
 			"date": bson.M{
 				"$gt": voting.StartTime,
 				"$lt": voting.EndTime,
-				// "$gt": time.Now().Add(-12 * time.Hour),
-				// "$lt": time.Now().Add(12 * time.Hour),
 			},
 		}
 		findOptions.SetSort(bson.M{"vote_count": -1})
@@ -561,7 +559,7 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 			}
 
 			now := time.Now().UTC()
-			voting := getVotingSettings(now)
+			voting, now := getVotingSettings(now)
 
 			if vote.Value == "up" {
 				if now.Before(voting.StartTime) {
@@ -650,7 +648,8 @@ func updateDocumentInDatabase(data interface{}, collectionName string) (interfac
 func insertDocumentInDatabase(data interface{}, collectionName string) (*mongo.InsertOneResult, error) {
 	if collectionName == "location" {
 		now := time.Now().UTC()
-		voting := getVotingSettings(now)
+		voting, now := getVotingSettings(now)
+
 		if now.Before(voting.StartTime) || now.After(voting.EndTime) {
 			err := "Voting has not yet begun!"
 			return nil, errors.New(err)
