@@ -20,11 +20,11 @@ class Directions extends React.Component {
         directionsRenderer.setMap(map);
     
         let lat = position.coords.latitude;
-        if(props.place && props.place.lat != 0) {
+        if(props.place && props.place.lat !== 0) {
             lat = props.place.lat;
         }
         let lng = position.coords.longitude;
-        if(props.place && props.place.lng != 0) {
+        if(props.place && props.place.lng !== 0) {
             lng = props.place.lng;
         }
         directionsService.route(
