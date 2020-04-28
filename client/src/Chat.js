@@ -37,13 +37,12 @@ class Chat extends React.Component {
       const firstNewMessage = document.querySelector('.id-' + newData[0]._id);
       const parent = document.querySelector('.id-' + newData[0]._id).parentNode;
       parent.insertBefore(div, firstNewMessage);
-
-      if(!wasScrolledToBottom) {
-        document.querySelector('.new-messages-button').style.display = 'flex';
-      }
+    }
+    if (newData.length > 0 && focusScrolledOrCollapsed && !wasScrolledToBottom) {
+      document.querySelector('.new-messages-button').style.display = 'flex';
     }
 
-    if(newData.length > 0) {
+    if (newData.length > 0) {
       const element = document.querySelector('.notification-count');
       handleChatBalloon((parseInt(element.innerHTML) || 0) + newData.length);
     }
@@ -94,12 +93,12 @@ class Chat extends React.Component {
   }
 }
 
-const isScrolledToBottom = function() {
+const isScrolledToBottom = function () {
   return container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
 }
 
-const removeMessageBannersWhenScrolled = function() {
-  if(isScrolledToBottom()) {
+const removeMessageBannersWhenScrolled = function () {
+  if (isScrolledToBottom()) {
     removeMessageBanners();
   } else {
     container.addEventListener('scroll', removeMessageBanners);
@@ -107,26 +106,29 @@ const removeMessageBannersWhenScrolled = function() {
 }
 
 const removeMessageBanners = function () {
-  if(isScrolledToBottom()) {
+  if (isScrolledToBottom()) {
     document.querySelector('.new-messages-button').style.display = 'none';
-    const unread = document.querySelector('.unread-div');
-    if (unread) {
-      unread.parentNode.removeChild(unread);
-    }
     container.removeEventListener('scroll', removeMessageBanners);
     handleChatBalloon(0);
   }
 }
 
-const handleChatBalloon = function(count) {
-  if(count > 0) {
-    document.querySelector('.notification-balloon').style.display = 'block';
-    const element = document.querySelector('.notification-count');
-    element.style.display = 'block';
-    element.innerHTML = count;
+const handleChatBalloon = function (count) {
+  if (count > 0) {
+    document.querySelectorAll('.notification-balloon').forEach(function (element) {
+      element.style.display = 'block';
+    });
+    document.querySelectorAll('.notification-count').forEach(function (element) {
+      element.style.display = 'block';
+      // element.innerHTML = count;
+    });
   } else {
-    document.querySelector('.notification-balloon').style.display = 'none';
-    document.querySelector('.notification-count').style.display = 'none';
+    document.querySelectorAll('.notification-balloon').forEach(function (element) {
+      element.style.display = 'none';
+    });
+    document.querySelectorAll('.notification-count').forEach(function (element) {
+      element.style.display = 'none';
+    });
   }
 }
 
