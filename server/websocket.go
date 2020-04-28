@@ -20,7 +20,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var clientTokens = make(map[*websocket.Conn]string)
+var clientTokens = sync.Map{}
 var clientUserIDs = sync.Map{}
 var clientOfflineUserIDs = sync.Map{}
 
@@ -45,7 +45,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		c.WriteMessage(websocket.CloseMessage, message)
 		return
 	}
-	clientTokens[c] = token
+	clientTokens.Store(c, token)
 	clientOfflineUserIDs.Delete(claims.User.ID.Hex())
 	clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 
@@ -63,7 +63,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 		time, _ := clientUserIDs.Load(userID)
 		clientOfflineUserIDs.Store(userID, time)
 		clientUserIDs.Delete(userID)
-		delete(clientTokens, c)
+		clientTokens.Delete(c)
 		c.Close()
 	}()
 	for {
@@ -74,7 +74,8 @@ func handleConnection(c *websocket.Conn, userID string) {
 			}
 			break
 		}
-		authenticated, token, claims := authenticateWebsocket(c, clientTokens[c])
+		token, _ := clientTokens.Load(c)
+		authenticated, token, claims := authenticateWebsocket(c, token.(string))
 		if !authenticated {
 			break
 		}
@@ -107,7 +108,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 				return true
 			})
 			if websocketMessage.Active {
-				clientTokens[c] = token
+				clientTokens.Store(c, token)
 				clientOfflineUserIDs.Delete(claims.User.ID.Hex())
 				clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 			}
@@ -144,14 +145,15 @@ func handleConnection(c *websocket.Conn, userID string) {
 				results = bson.M{"users": users, "message": message, "progress": progress, "winner": winner}
 			}
 
-			var body bson.M = bson.M{"type": "background", "token": clientTokens[c], "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
+			token, _ := clientTokens.Load(c)
+			var body bson.M = bson.M{"type": "background", "token": token.(string), "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
 			err3 := c.WriteJSON(body)
 			if err3 != nil {
 				log.Print(err3)
 			}
 		} else {
 			log.Print("Message received from websocket. User: " + claims.User.Username + " | Message: " + websocketMessage.Type)
-			clientTokens[c] = token
+			clientTokens.Store(c, token)
 			clientOfflineUserIDs.Delete(claims.User.ID.Hex())
 			clientUserIDs.Store(claims.User.ID.Hex(), time.Now())
 		}
@@ -203,32 +205,34 @@ func handleConnection(c *websocket.Conn, userID string) {
 			continue
 		}
 
-		for client := range clientTokens {
+	
+		clientTokens.Range(func(key interface{}, value interface{}) bool {
 			if err != nil {
 				log.Printf("error: %v", err)
 			}
 
-			authenticated, token, claims := authenticateWebsocket(c, clientTokens[client])
-			if !authenticated {
-				continue
-			}
-			clientTokens[client] = token
-
-			if websocketMessage.Type == "chat" {
-				writeDocumentsToClient(client, "chat", claims)
-			} else if websocketMessage.Type == "location" {
-				writeDocumentsToClient(client, "location", claims)
-			} else if websocketMessage.Type == "vote" {
-				writeDocumentsToClient(client, "location", claims)
-			} else if websocketMessage.Type == "user" {
-				writeDocumentsToClient(client, "user", claims)
-			} else if websocketMessage.Type == "settings" {
-				writeDocumentsToClient(client, "location", claims)
-				if claims.User.Role == "admin" {
-					writeDocumentsToClient(client, "settings", claims)
+			authenticated, token, claims := authenticateWebsocket(c, value.(string))
+			if authenticated {
+				client := key.(*websocket.Conn)
+				clientTokens.Store(client, token)
+	
+				if websocketMessage.Type == "chat" {
+					writeDocumentsToClient(client, "chat", claims)
+				} else if websocketMessage.Type == "location" {
+					writeDocumentsToClient(client, "location", claims)
+				} else if websocketMessage.Type == "vote" {
+					writeDocumentsToClient(client, "location", claims)
+				} else if websocketMessage.Type == "user" {
+					writeDocumentsToClient(client, "user", claims)
+				} else if websocketMessage.Type == "settings" {
+					writeDocumentsToClient(client, "location", claims)
+					if claims.User.Role == "admin" {
+						writeDocumentsToClient(client, "settings", claims)
+					}
 				}
 			}
-		}
+			return true
+		})
 	}
 }
 
@@ -245,7 +249,6 @@ func getVotingSettings(now time.Time) (Voting, time.Time) {
 
 	voting.StartTime = time.Date(now.Year(), now.Month(), now.Day(), voting.StartTime.Hour(), voting.StartTime.Minute(), 0, 0, locale)
 	voting.EndTime = time.Date(now.Year(), now.Month(), now.Day(), voting.EndTime.Hour(), voting.EndTime.Minute(), 0, 0, locale)
-	log.Print(now.String() + " - " + voting.StartTime.String() + " - " + voting.EndTime.String())
 	return voting, now
 }
 
@@ -279,12 +282,38 @@ func writeDocumentsToClient(c *websocket.Conn, collectionName string, claims *Cl
 		}
 		results = append(results, &result)
 	}
-	var body bson.M = bson.M{"type": collectionName, "token": clientTokens[c], "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
+	token, _ := clientTokens.Load(c)
+	var body bson.M = bson.M{"type": collectionName, "token": token.(string), "timeout": (claims.ExpiresAt-time.Now().Unix())*1000 + 2000, "body": results}
 
 	err2 := c.WriteJSON(body)
 	if err2 != nil {
 		log.Print(err2)
 	}
+}
+
+func writeDocumentsToClients(collectionName string) {
+	cur := findDocuments(collectionName)
+
+	var results []*bson.M
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		var result bson.M
+		err1 := cur.Decode(&result)
+		if err1 != nil {
+			log.Print(err1)
+		}
+		delete(result, "password")
+		results = append(results, &result)
+	}
+	
+	clientTokens.Range(func(key interface{}, value interface{}) bool {
+		var body bson.M = bson.M{"type": collectionName, "token": value, "body": results}
+		err2 := key.(*websocket.Conn).WriteJSON(body)
+		if err2 != nil {
+			log.Print(err2)
+		}
+		return true
+	})
 }
 
 func fixVoteJSON(result bson.M, voteType string, claims *Claims) bson.M {
