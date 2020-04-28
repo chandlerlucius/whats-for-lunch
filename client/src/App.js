@@ -11,6 +11,7 @@ import GoogleMap from './Map';
 import Suggestions from './Suggestions';
 import { MdChat } from 'react-icons/md';
 import { FiLogOut } from 'react-icons/fi';
+import { GiTrophy } from 'react-icons/gi';
 import { FaComment } from 'react-icons/fa';
 import { MdSettings } from 'react-icons/md';
 import { GiKnifeFork } from 'react-icons/gi';
@@ -139,10 +140,19 @@ class App extends React.Component {
             }
           }
           const overlay = document.querySelector('.full-overlay');
-          if (json.body.winner && overlay.classList.contains('hidden')) {
-            overlay.classList.remove('hidden')
+          if (json.body.winner && overlay.classList.contains('hidden-with-z-index') && !localStorage.getItem('winner-overlay-closed')) {
             ReactDOM.render(<Details place={json.body.winner} window={true} />, document.querySelector('.winning-container'));
             ReactDOM.render(<Directions place={json.body.winner} />, document.querySelector('.directions-container'));
+            if (!document.hasFocus()) {
+              window.addEventListener('focus', function () {
+                displayWinnerOverlay(json);
+              }, { once: true });
+            } else {
+              displayWinnerOverlay(json);
+            }
+          } else if(!json.body.winner){
+            closeWinnerOverlay();
+            localStorage.removeItem('winner-overlay-closed');
           }
           resetBackgroundTimeout(10000);
         }
@@ -153,7 +163,7 @@ class App extends React.Component {
 
   closeMenu() {
     const center = document.querySelector('.center');
-    const overlay = document.querySelector('.overlay');
+    const overlay = document.querySelector('.side-overlay');
     const left = document.querySelector('.left');
     if (left.classList.contains('left-menu-toggled')) {
       left.classList.remove('left-menu-toggled');
@@ -182,9 +192,11 @@ class App extends React.Component {
 
   render() {
     return [
-      <div key="overlay" className="full-overlay hidden">
-        <div className="winning-container flex-center-horizontal"></div>
-        <div className="directions-container"></div>
+      <div key="overlay" className="full-overlay hidden-with-z-index">
+        <h2 className="button close" onClick={closeWinnerOverlay} title="Close Overlay"><GiKnifeFork /></h2>
+        <h1 className="winner-text hidden">And the winner is...</h1>
+        <div className="winning-container flex-center-horizontal hidden-with-z-index"></div>
+        <div className="directions-container hidden-with-z-index"></div>
       </div>,
       <nav key="nav" className="flex-center-vertical">
         <div className="flex">
@@ -234,7 +246,10 @@ class App extends React.Component {
         </form>
       </div>,
       <div key="center" className="center">
-        <h3 className="voting-message"> </h3>
+        <div className="flex-center-horizontal">
+          <h3 className="voting-message"> </h3>
+          <h3 className="winner-button hidden" title="View current winner" onClick={displayWinnerOverlay}><GiTrophy/></h3>
+        </div>
         <div className="suggestions-container"></div>
         <div className="search-container"></div>
         <div className="map-container flex"></div>
@@ -331,6 +346,28 @@ export const toggleToolsMenu = function (event) {
     }
     document.querySelector('.back').classList.remove('hidden');
   }
+}
+
+const displayWinnerOverlay = function() {
+  const overlay = document.querySelector('.full-overlay');
+  document.querySelector('.winner-text').classList.remove('hidden');
+  document.querySelector('.winner-button').classList.remove('hidden');
+  overlay.classList.remove('hidden-with-z-index');
+  overlay.classList.add('visible-with-z-index');
+  setTimeout(function() {
+    document.querySelector('.winner-text').classList.add('hidden');
+    document.querySelector('.winning-container').classList.remove('hidden-with-z-index');
+    document.querySelector('.directions-container').classList.remove('hidden-with-z-index');
+  }, 3000);
+}
+
+const closeWinnerOverlay = function() {
+  const overlay = document.querySelector('.full-overlay');
+  overlay.classList.add('hidden-with-z-index');
+  overlay.classList.remove('visible-with-z-index');
+  document.querySelector('.winning-container').classList.add('hidden-with-z-index');
+  document.querySelector('.directions-container').classList.add('hidden-with-z-index');
+  localStorage.setItem('winner-overlay-closed', 'true');
 }
 
 const resetLogoutTimeout = function (timeout) {
