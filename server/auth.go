@@ -156,7 +156,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			if res != nil {
 				user.ID = res.InsertedID.(primitive.ObjectID)
-				info := "Added to DB succesffully: Settings for " + settings.Name  + " | id:" + res.InsertedID.(primitive.ObjectID).String()
+				info := "Added to DB succesffully: Settings for " + settings.Name + " | id:" + res.InsertedID.(primitive.ObjectID).String()
 				log.Print(info)
 			}
 			userRole = "admin"
