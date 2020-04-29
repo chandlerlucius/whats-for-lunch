@@ -21,16 +21,7 @@ import { TiThMenuOutline } from 'react-icons/ti';
 import Settings, { timezoneInterval } from './Settings';
 import Directions from './Directions';
 
-let url;
 export let socket;
-let host = window.location.host;
-host = host.replace('3000', '9000');
-if (window.location.protocol === 'https:') {
-  url = `wss://${host}/ws`;
-} else {
-  url = `ws://${host}/ws`;
-}
-
 let socketTimeout;
 let logoutTimeout;
 let backgroundTimeout;
@@ -48,7 +39,15 @@ class App extends React.Component {
     }
 
     const start = function () {
+      const host = window.location.host.replace('3000', '9000').replace('8443', '8444');
       const token = localStorage.getItem('token');
+      let url;
+      if (window.location.protocol === 'https:') {
+        url = `wss://${host}/ws`;
+      } else {
+        url = `ws://${host}/ws`;
+      }
+
       socket = new WebSocket(url + '?token=' + token);
       socket.onopen = function () {
         clearTimeoutsAndIntervals();
