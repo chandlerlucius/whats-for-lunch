@@ -27,7 +27,7 @@ class Login extends React.Component {
     const react = this;
     const form = event.target;
     const method = form.method;
-    const action = form.action.replace('3000', '9000');
+    const action = form.action.replace('3000', '9000').replace('8443', '8444');;
     event.preventDefault();
     const messageTimeout1 = setTimeout(function () {
       react.setState({
