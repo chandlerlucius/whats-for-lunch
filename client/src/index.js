@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const authenticate = function () {
-  const href = window.location.href.replace('3000', '9000');
+  const href = window.location.href.replace('3000', '9000').replace('8443', '8444');;
   let token = localStorage.getItem('token');
   token = token != null ? token : "";
 
