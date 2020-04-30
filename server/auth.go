@@ -35,7 +35,7 @@ func checkPasswordHash(password string, hash string) bool {
 }
 
 var key = []byte("the_most_secret_key")
-var expirationTime = 10 * time.Minute
+var expirationTime = 7 * 24 * time.Hour
 
 func authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
