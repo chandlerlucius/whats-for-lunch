@@ -227,7 +227,7 @@ a:hover {
 }
 
 .login-message {
-  white-space: pre;
+  white-space: pre-wrap;
   font-weight: bold;
 }
 
