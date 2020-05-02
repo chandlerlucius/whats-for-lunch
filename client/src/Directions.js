@@ -8,9 +8,11 @@ class Directions extends React.Component {
         navigator.geolocation.getCurrentPosition(this.showDirections);
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         props = this.props;
-        navigator.geolocation.getCurrentPosition(this.showDirections);
+        if(JSON.stringify(prevProps) !== JSON.stringify(props) ) {
+            navigator.geolocation.getCurrentPosition(this.showDirections);
+        }
     }
 
     showDirections(position) {
@@ -18,13 +20,13 @@ class Directions extends React.Component {
         var directionsRenderer = new window.google.maps.DirectionsRenderer();
         var map = new window.google.maps.Map(document.querySelector('.directions'));
         directionsRenderer.setMap(map);
-    
+
         let lat = position.coords.latitude;
-        if(props.place && props.place.lat !== 0) {
+        if (props.place && props.place.lat !== 0) {
             lat = props.place.lat;
         }
         let lng = position.coords.longitude;
-        if(props.place && props.place.lng !== 0) {
+        if (props.place && props.place.lng !== 0) {
             lng = props.place.lng;
         }
         directionsService.route(
