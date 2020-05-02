@@ -117,32 +117,30 @@ func handleConnection(c *websocket.Conn, userID string) {
 			voting, now := getVotingSettings(now)
 
 			var message string
-			var progress int
+			var votingInProgress bool
 			var winner interface{}
 			var err error
 			if now.Before(voting.StartTime) {
 				duration := time.Until(voting.StartTime)
 				message = "Voting begins in " + fmtDuration(duration) + " (" + voting.StartTimeString + ")"
-				progress = 0
+				votingInProgress = false
 			} else if now.Before(voting.EndTime) {
 				duration := time.Until(voting.EndTime)
 				message = "Voting ends in " + fmtDuration(duration) + " (" + voting.EndTimeString + ")"
-				progress = 1
+				votingInProgress = true
 			} else {
 				voting.StartTime = voting.StartTime.AddDate(0, 0, 1)
 				duration := voting.StartTime.Sub(now)
 				message = "Voting begins in " + fmtDuration(duration) + " (" + voting.StartTimeString + ")"
-				progress = 0
+				votingInProgress = false
 			}
-			if now.After(voting.EndTime) && now.Before(voting.EndTime.Add(2*time.Hour)) {
-				winner, err = findOneDocument("location")
-			}
+			winner, err = findOneDocument("location")
 
 			var results bson.M
 			if err != nil {
-				results = bson.M{"users": users, "message": message, "progress": progress}
+				results = bson.M{"users": users, "message": message, "voting_in_progress": votingInProgress}
 			} else {
-				results = bson.M{"users": users, "message": message, "progress": progress, "winner": winner}
+				results = bson.M{"users": users, "message": message, "voting_in_progress": votingInProgress, "winner": winner}
 			}
 
 			token, _ := clientTokens.Load(c)
@@ -379,7 +377,6 @@ func findDocuments(collectionName string) *mongo.Cursor {
 		start := voting.StartTime
 		end := voting.EndTime
 		if now.After(voting.EndTime) {
-			start = now
 			end = now
 		}
 		filter = bson.M{
