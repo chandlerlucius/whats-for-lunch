@@ -132,26 +132,40 @@ class App extends React.Component {
           }
           if (json.body.message) {
             document.querySelector('.voting-message').innerHTML = json.body.message;
-            if (json.body.progress === 1) {
+            if (json.body.voting_in_progress) {
               document.querySelector('.voting-message').style.color = 'var(--success-color)';
             } else {
               document.querySelector('.voting-message').style.color = 'var(--failure-color)';
             }
           }
-          const overlay = document.querySelector('.full-overlay');
-          if (json.body.winner && overlay.classList.contains('hidden-with-z-index') && !localStorage.getItem('winner-overlay-closed')) {
-            ReactDOM.render(<Details place={json.body.winner} window={true} />, document.querySelector('.winning-container'));
-            ReactDOM.render(<Directions place={json.body.winner} />, document.querySelector('.directions-container'));
-            if (!document.hasFocus()) {
-              window.addEventListener('focus', function () {
+          
+          ReactDOM.render(<Details place={json.body.winner} window={true} />, document.querySelector('.winning-container'));
+          ReactDOM.render(<Directions place={json.body.winner} />, document.querySelector('.directions-container'));
+          if(json.body.winner) {
+            document.querySelector('.winner-button').classList.remove('hidden');
+            if (!json.body.voting_in_progress && !localStorage.getItem('winner-overlay-closed')) {
+              if (!document.hasFocus()) {
+                window.addEventListener('focus', function () {
+                  displayWinnerOverlay(json);
+                }, { once: true });
+              } else {
                 displayWinnerOverlay(json);
-              }, { once: true });
-            } else {
-              displayWinnerOverlay(json);
+              }
             }
-          } else if (!json.body.winner) {
-            closeWinnerOverlay();
+          } else {
+            document.querySelector('.winner-button').classList.add('hidden');
+          }
+          
+          if (!json.body.winner || json.body.voting_in_progress) {
             localStorage.removeItem('winner-overlay-closed');
+          }
+
+          if (!json.body.voting_in_progress) {
+            document.querySelector('.suggestions-container').style.opacity = '0.5';
+            document.querySelector('.suggestions-container').style.pointerEvents = 'none';
+          } else {
+            document.querySelector('.suggestions-container').style.opacity = '1';
+            document.querySelector('.suggestions-container').style.pointerEvents = '';
           }
           resetBackgroundTimeout(10000);
         }
@@ -355,9 +369,10 @@ export const toggleToolsMenu = function (event) {
 }
 
 const displayWinnerOverlay = function () {
+  if(document.querySelector('.full-overlay').classList.contains('hidden-with-z-index')) {
+    document.querySelector('.winner-text').classList.remove('hidden');
+  }
   const overlay = document.querySelector('.full-overlay');
-  document.querySelector('.winner-text').classList.remove('hidden');
-  document.querySelector('.winner-button').classList.remove('hidden');
   overlay.classList.remove('hidden-with-z-index');
   overlay.classList.add('visible-with-z-index');
   setTimeout(function () {
