@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import Chat from './Chat';
-import Toast, { toastCloseTimeout } from './Toast';
+import Toast, { toastCloseTimeout, clickToastX } from './Toast';
 import Users from './Users';
 import Login from './Login';
 import Search from './Search';
@@ -447,8 +447,9 @@ export const clearTimeoutsAndIntervals = function () {
   clearTimeout(socketTimeout);
   clearTimeout(logoutTimeout);
   clearTimeout(backgroundTimeout);
-  clearTimeout(toastCloseTimeout);
   clearInterval(timezoneInterval);
+  clearTimeout(toastCloseTimeout);
+  clickToastX();
 }
 
 export const formatDate = function (date) {
