@@ -202,11 +202,23 @@ func handleConnection(c *websocket.Conn, userID string) {
 				c.WriteJSON(message)
 			}
 		} else if websocketMessage.Type == "sms" {
-			prepareAndSendSMS(c, bytes);
+			err := prepareAndSendSMS(c, bytes)
+			message := Message{}
+			if err != nil {
+				message.Status = http.StatusInternalServerError
+				message.Title = "sms"
+				message.Body = err.Error()
+				c.WriteJSON(message)
+			} else {
+				message.Status = http.StatusOK
+				message.Title = "sms"
+				message.Body = "SMS sent successfully"
+				c.WriteJSON(message)
+			}
 		} else {
 			continue
 		}
-	
+
 		clientTokens.Range(func(key interface{}, value interface{}) bool {
 			if err != nil {
 				log.Printf("error: %v", err)
@@ -216,7 +228,7 @@ func handleConnection(c *websocket.Conn, userID string) {
 			if authenticated {
 				client := key.(*websocket.Conn)
 				clientTokens.Store(client, token)
-	
+
 				if websocketMessage.Type == "chat" {
 					writeDocumentsToClient(client, "chat", claims)
 				} else if websocketMessage.Type == "location" {
@@ -237,51 +249,87 @@ func handleConnection(c *websocket.Conn, userID string) {
 	}
 }
 
-func prepareAndSendSMS(c *websocket.Conn, bytes []byte) {
+func prepareAndSendSMS(c *websocket.Conn, bytes []byte) error {
+	errorMessage := ""
 	sms := &SMS{}
-	err := json.Unmarshal(bytes, sms)
-	if err != nil {
-		log.Print(err)
+	err1 := json.Unmarshal(bytes, sms)
+	if err1 != nil {
+		log.Print(err1)
+		errorMessage += "Invlalid data sent from client.\n"
 	}
 
 	var keys map[string]string
-	file, _ := ioutil.ReadFile("keys.json") 
-	_ = json.Unmarshal([]byte(file), &keys)
+	file, err2 := ioutil.ReadFile("keys.json")
+	if err2 != nil {
+		log.Print(err2)
+		errorMessage += "Cannot read keys.json file.\n"
+	}
 
-	link := shortenLink(sms, keys)
+	err3 := json.Unmarshal([]byte(file), &keys)
+	if err3 != nil {
+		log.Print(err3)
+	}
+
+	link, err4 := shortenLink(sms, keys)
+	if err4 != nil {
+		errorMessage += err4.Error()
+	}
 	sms.Link = link
-	sendSMS(sms, keys)
+	err5 := sendSMS(sms, keys)
+	if err5 != nil {
+		errorMessage += err5.Error()
+	}
+
+	var err error
+	if errorMessage != "" {
+		err = errors.New(errorMessage)
+	}
+	return err
 }
 
-func shortenLink(sms *SMS, keys map[string]string) string {
+func shortenLink(sms *SMS, keys map[string]string) (string, error) {
+	errorMessage := ""
 	jsonStr := []byte(`
 	{
 		"long_url": "` + sms.URL + `"},
 	}`)
-	req, err := http.NewRequest("POST", "https://api-ssl.bitly.com/v4/shorten", bytes.NewBuffer(jsonStr))
-	req.Header.Set("Authorization", "Bearer " + keys["url_shortener"])
+	req, err1 := http.NewRequest("POST", "https://api-ssl.bitly.com/v4/shorten", bytes.NewBuffer(jsonStr))
+	if err1 != nil {
+		log.Print(err1)
+		errorMessage += "Issue connecting to api.\n"
+	}
+	req.Header.Set("Authorization", "Bearer "+keys["url_shortener"])
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
-	res, err := client.Do(req)
-	if err != nil {
-		log.Print(err);
+	res, err2 := client.Do(req)
+	if err2 != nil {
+		log.Print(err2)
+		errorMessage += "Issue reading data from api.\n"
 	}
 	defer res.Body.Close()
 
-	log.Print(res.Status);
+	log.Print(res.Status)
 	var result map[string]interface{}
 	body, _ := ioutil.ReadAll(res.Body)
-	err1 := json.Unmarshal(body, &result)
-	if err1 != nil {
-		log.Print(err1)
+	err3 := json.Unmarshal(body, &result)
+	if err3 != nil || res.StatusCode != 200 {
+		log.Print(err3)
+		errorMessage += "Issue parsing data from api.\n"
 	}
-	fmt.Println("response Body:", string(body))
-	return result["link"].(string)
+	log.Print("Response Body: ", string(body))
+
+	var err error
+	if errorMessage != "" {
+		err = errors.New(errorMessage)
+	}
+
+	return result["link"].(string), err
 }
 
-func sendSMS(sms *SMS, keys map[string]string) {
+func sendSMS(sms *SMS, keys map[string]string) error {
+	errorMessage := ""
 	jsonStr := []byte(`
 	{
 		"sender": {"email" : "Hi@whatsforlunch.dev"},
@@ -289,26 +337,39 @@ func sendSMS(sms *SMS, keys map[string]string) {
 		"textContent": "` + sms.Title + ` - ` + sms.Link + `",
 		"subject": "What's for Lunch?"
 	}`)
-	req, err := http.NewRequest("POST", "https://api.sendinblue.com/v3/smtp/email", bytes.NewBuffer(jsonStr))
+	req, err1 := http.NewRequest("POST", "https://api.sendinblue.com/v3/smtp/email", bytes.NewBuffer(jsonStr))
+	if err1 != nil {
+		log.Print(err1)
+		errorMessage += "Issue connecting to api.\n"
+	}
 	req.Header.Set("api-key", keys["email"])
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
-	res, err := client.Do(req)
-	if err != nil {
-		log.Print(err);
+	res, err2 := client.Do(req)
+	if err2 != nil {
+		log.Print(err2)
+		errorMessage += "Issue reading data from api.\n"
 	}
 	defer res.Body.Close()
 
-	log.Print(res.Status);
-	var result map[string]string
+	log.Print(res.Status)
+	var result map[string]interface{}
 	body, _ := ioutil.ReadAll(res.Body)
-	err1 := json.Unmarshal(body, &result)
-	if err1 != nil {
-		log.Print(err1)
+	err3 := json.Unmarshal(body, &result)
+	if err3 != nil || res.StatusCode != 201 {
+		log.Print(err3)
+		errorMessage += "Issue parsing data from api.\n"
 	}
-	fmt.Println("response Body:", string(body))
+	log.Print("Response Body: ", string(body))
+
+	var err error
+	if errorMessage != "" {
+		err = errors.New(errorMessage)
+	}
+
+	return err
 }
 
 func getVotingSettings(now time.Time) (Voting, time.Time) {
@@ -380,7 +441,7 @@ func writeDocumentsToClients(collectionName string) {
 		delete(result, "password")
 		results = append(results, &result)
 	}
-	
+
 	clientTokens.Range(func(key interface{}, value interface{}) bool {
 		var body bson.M = bson.M{"type": collectionName, "token": value, "body": results}
 		err2 := key.(*websocket.Conn).WriteJSON(body)
@@ -872,9 +933,9 @@ type Location struct {
 
 // SMS is used to construct and send an SMS to phone number via SMTP email
 type SMS struct {
-	Number  int64 `json:"number"`
+	Number  int64  `json:"number"`
 	Carrier string `json:"carrier"`
 	Title   string `json:"title"`
-	URL		string `json:"url"`
-	Link	string `json:"link"`
+	URL     string `json:"url"`
+	Link    string `json:"link"`
 }
