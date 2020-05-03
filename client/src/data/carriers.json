@@ -1,0 +1,38 @@
+[
+    {
+        "name" : "AT&T",
+        "email" : "txt.att.net"
+    },
+    {
+        "name" : "Verizon",
+        "email" : "vtext.com"
+    },
+    {
+        "name" : "T-Mobile",
+        "email" : "tmomail.net"
+    },
+    {
+        "name" : "Sprint",
+        "email" : "messaging.sprintpcs.com"
+    },
+    {
+        "name" : "Virgin Mobile",
+        "email" : "vmobl.com"
+    },
+    {
+        "name" : "Cricket",
+        "email" : "mms.cricketwireless.net"
+    },
+    {
+        "name" : "Boost Mobile",
+        "email" : "sms.myboostmobile.com"
+    },
+    {
+        "name" : "US Cellular",
+        "email" : "email.uscc.net"
+    },
+    {
+        "name" : "Google Fi",
+        "email" : "msg.fi.google.com"
+    }
+]
