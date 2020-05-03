@@ -1,4 +1,5 @@
 import React from 'react';
+import { submitFormWithEvent } from './App'
 
 let props;
 
@@ -46,9 +47,16 @@ class Directions extends React.Component {
     }
 
     render() {
-        return (
-            <div className="directions"></div>
-        )
+        return [
+            <form key="sms-form" method="POST" action="phone" onSubmit={submitFormWithEvent} className="flex-center-horizontal" style={{justifyContent: 'space-between'}}>
+                <input type="number" name="number" required={true}></input>
+                <input type="hidden" name="title" value={props ? props.place.name : ""}></input>
+                <input type="hidden" name="url" value={props ? props.place.url : ""}></input>
+                <select name="carrier" required={true}><option value="messaging.sprintpcs.com">Sprint</option></select>
+                <button>Send to Phone</button>
+            </form>,
+            <div key="directions" className="directions"></div>
+        ]
     }
 }
 
