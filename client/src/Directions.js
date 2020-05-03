@@ -1,12 +1,15 @@
 import React from 'react';
 import { submitFormWithEvent } from './App'
+import carriers from './data/carriers.json';
 
+const carrierData = JSON.parse(JSON.stringify(carriers));
 let props;
 
 class Directions extends React.Component {
     componentDidMount() {
         props = this.props;
         navigator.geolocation.getCurrentPosition(this.showDirections);
+        this.setupCarrierOptions();
     }
 
     componentDidUpdate(prevProps) {
@@ -14,6 +17,7 @@ class Directions extends React.Component {
         if(JSON.stringify(prevProps) !== JSON.stringify(props) ) {
             navigator.geolocation.getCurrentPosition(this.showDirections);
         }
+        this.selectClientValues();
     }
 
     showDirections(position) {
@@ -46,13 +50,45 @@ class Directions extends React.Component {
         );
     }
 
+    setupCarrierOptions() {
+        const clientCarrier = "";
+        for (let i = 0; i < carrierData.length; i++) {
+            const option = document.createElement('option');
+            option.text = carrierData[i].name;
+            option.value = carrierData[i].email;
+            option.classList.add(carrierData[i].email.replace(/[.]/g, '-'));
+            document.querySelector('.carrier').append(option);
+            if (clientCarrier === carrierData[i].name) {
+                option.selected = true;
+            }
+        }
+    }
+
+    selectClientValues() {
+        const clientCarrier = "";
+        for (let i = 0; i < carrierData.length; i++) {
+            const option = document.querySelector('.' + carrierData[i].email.replace(/[.]/g, '-'));
+            if (clientCarrier === carrierData[i].name) {
+                option.selected = true;
+            }
+        }
+    }
+
     render() {
+        let name = "";
+        if(this.props && this.props.place) {
+            name = this.props.place.name;
+        }
+        let url = "";
+        if(this.props && this.props.place) {
+            url = this.props.place.url;
+        }
         return [
-            <form key="sms-form" method="POST" action="sms" onSubmit={submitFormWithEvent} className="flex-center-horizontal" style={{justifyContent: 'space-between'}}>
-                <input type="number" name="number" required={true}></input>
-                <input type="hidden" name="title" value={props ? props.place.name : ""}></input>
-                <input type="hidden" name="url" value={props ? props.place.url : ""}></input>
-                <select name="carrier" required={true}><option value="messaging.sprintpcs.com">Sprint</option></select>
+            <form key="sms-form" method="POST" action="sms" onSubmit={submitFormWithEvent} className="sms-form flex-center-horizontal">
+                <input type="number" name="number" required={true} placeholder="# Format: 5125125123"></input>
+                <input type="hidden" name="title" value={name}></input>
+                <input type="hidden" name="url" value={url}></input>
+                <select name="carrier" className="carrier" required={true}></select>
                 <button>Send to Phone</button>
             </form>,
             <div key="directions" className="directions"></div>
