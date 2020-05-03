@@ -260,7 +260,7 @@ class App extends React.Component {
           <div className="settings-container hidden"></div>
         </div>
         <div className="chat-container"></div>
-        <form method="POST" action="chat" onSubmit={submitFormWithEvent} className="chat-form">
+        <form key="chat-form" method="POST" action="chat" onSubmit={submitFormWithEvent} className="chat-form">
           <textarea name="message" className="chat-textarea" rows={4} required={true} placeholder="Send a message..." onKeyPress={this.submitWhenEnterPressed} onFocus={this.removeUnreadDiv}></textarea>
           <button type="submit">Send</button>
         </form>
