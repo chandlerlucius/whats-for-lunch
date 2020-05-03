@@ -48,7 +48,7 @@ class Directions extends React.Component {
 
     render() {
         return [
-            <form key="sms-form" method="POST" action="phone" onSubmit={submitFormWithEvent} className="flex-center-horizontal" style={{justifyContent: 'space-between'}}>
+            <form key="sms-form" method="POST" action="sms" onSubmit={submitFormWithEvent} className="flex-center-horizontal" style={{justifyContent: 'space-between'}}>
                 <input type="number" name="number" required={true}></input>
                 <input type="hidden" name="title" value={props ? props.place.name : ""}></input>
                 <input type="hidden" name="url" value={props ? props.place.url : ""}></input>
