@@ -57,7 +57,6 @@ button {
 
 input,
 select {
-  width: 100%;
   outline: none;
   border: none;
   font-size: 16px;
@@ -221,6 +220,10 @@ a:hover {
   box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
+.login-form input, .time-form input, .time-form select {
+  width: 100%;
+}
+
 .login-form hr {
   margin: 20px;
   border: 1px solid rgba(160, 160, 160, 0.2);
@@ -243,6 +246,10 @@ a:hover {
 
 .full-overlay .close {
   float: right;
+}
+
+.sms-form input, .sms-form select, .sms-form button {
+  margin: 5px;
 }
 
 nav {
@@ -581,7 +588,7 @@ nav,
 
 .toast-container {
   bottom: 0;
-  z-index: 1;
+  z-index: 3;
   opacity: 0.9;
   padding: 10px;
   position: fixed;
