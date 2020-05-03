@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"regexp"
@@ -199,10 +201,11 @@ func handleConnection(c *websocket.Conn, userID string) {
 				message.Body = "You must be an admin to change voting settings!"
 				c.WriteJSON(message)
 			}
+		} else if websocketMessage.Type == "sms" {
+			prepareAndSendSMS(c, bytes);
 		} else {
 			continue
 		}
-
 	
 		clientTokens.Range(func(key interface{}, value interface{}) bool {
 			if err != nil {
@@ -232,6 +235,80 @@ func handleConnection(c *websocket.Conn, userID string) {
 			return true
 		})
 	}
+}
+
+func prepareAndSendSMS(c *websocket.Conn, bytes []byte) {
+	sms := &SMS{}
+	err := json.Unmarshal(bytes, sms)
+	if err != nil {
+		log.Print(err)
+	}
+
+	var keys map[string]string
+	file, _ := ioutil.ReadFile("keys.json") 
+	_ = json.Unmarshal([]byte(file), &keys)
+
+	link := shortenLink(sms, keys)
+	sms.Link = link
+	sendSMS(sms, keys)
+}
+
+func shortenLink(sms *SMS, keys map[string]string) string {
+	jsonStr := []byte(`
+	{
+		"long_url": "` + sms.URL + `"},
+	}`)
+	req, err := http.NewRequest("POST", "https://api-ssl.bitly.com/v4/shorten", bytes.NewBuffer(jsonStr))
+	req.Header.Set("Authorization", "Bearer " + keys["url_shortener"])
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	client.Timeout = time.Second * 15
+	res, err := client.Do(req)
+	if err != nil {
+		log.Print(err);
+	}
+	defer res.Body.Close()
+
+	log.Print(res.Status);
+	var result map[string]interface{}
+	body, _ := ioutil.ReadAll(res.Body)
+	err1 := json.Unmarshal(body, &result)
+	if err1 != nil {
+		log.Print(err1)
+	}
+	fmt.Println("response Body:", string(body))
+	return result["link"].(string)
+}
+
+func sendSMS(sms *SMS, keys map[string]string) {
+	jsonStr := []byte(`
+	{
+		"sender": {"email" : "Hi@whatsforlunch.dev"},
+		"to": [{"email":"` + strconv.FormatInt(sms.Number, 10) + `@` + sms.Carrier + `"}],
+		"textContent": "` + sms.Title + ` - ` + sms.Link + `",
+		"subject": "What's for Lunch?"
+	}`)
+	req, err := http.NewRequest("POST", "https://api.sendinblue.com/v3/smtp/email", bytes.NewBuffer(jsonStr))
+	req.Header.Set("api-key", keys["email"])
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	client.Timeout = time.Second * 15
+	res, err := client.Do(req)
+	if err != nil {
+		log.Print(err);
+	}
+	defer res.Body.Close()
+
+	log.Print(res.Status);
+	var result map[string]string
+	body, _ := ioutil.ReadAll(res.Body)
+	err1 := json.Unmarshal(body, &result)
+	if err1 != nil {
+		log.Print(err1)
+	}
+	fmt.Println("response Body:", string(body))
 }
 
 func getVotingSettings(now time.Time) (Voting, time.Time) {
@@ -791,4 +868,13 @@ type Location struct {
 	UpVotes          []Vote             `json:"up_votes" bson:"up_votes"`
 	DownVotes        []Vote             `json:"down_votes" bson:"down_votes"`
 	VoteCount        int                `json:"vote_count" bson:"vote_count"`
+}
+
+// SMS is used to construct and send an SMS to phone number via SMTP email
+type SMS struct {
+	Number  int64 `json:"number"`
+	Carrier string `json:"carrier"`
+	Title   string `json:"title"`
+	URL		string `json:"url"`
+	Link	string `json:"link"`
 }
