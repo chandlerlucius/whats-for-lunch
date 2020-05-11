@@ -1,4 +1,7 @@
 <h1 align="center">
+What's for Lunch?
+</h1>
+<h1 align="center">
     <a href="https://whatsforlunch.dev">
         <img alt="What's For Lunch" width="30%" src="https://github.com/chandlerlucius/whats-for-lunch/blob/master/client/public/logo.svg" alt="What's For Lunch"/>
     </a>
