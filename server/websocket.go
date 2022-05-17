@@ -91,22 +91,26 @@ func handleConnection(c *websocket.Conn, userID string) {
 		if websocketMessage.Type == "background" {
 			var users []bson.M
 			clientOfflineUserIDs.Range(func(key interface{}, value interface{}) bool {
-				date := value.(time.Time)
-				var status = "offline"
-				var user = bson.M{"id": key, "last_seen": date, "status": status}
-				users = append(users, user)
+				if value != nil {
+					date := value.(time.Time)
+					var status = "offline"
+					var user = bson.M{"id": key, "last_seen": date, "status": status}
+					users = append(users, user)
+				}
 				return true
 			})
 			clientUserIDs.Range(func(key interface{}, value interface{}) bool {
-				date := value.(time.Time)
-				var status string
-				if date.Before(time.Now().Add(-5 * time.Minute)) {
-					status = "away"
-				} else {
-					status = "active"
+				if value != nil {
+					date := value.(time.Time)
+					var status string
+					if date.Before(time.Now().Add(-5 * time.Minute)) {
+						status = "away"
+					} else {
+						status = "active"
+					}
+					var user = bson.M{"id": key, "last_seen": date, "status": status}
+					users = append(users, user)
 				}
-				var user = bson.M{"id": key, "last_seen": date, "status": status}
-				users = append(users, user)
 				return true
 			})
 			if websocketMessage.Active {
