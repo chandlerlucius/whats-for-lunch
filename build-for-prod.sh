@@ -6,9 +6,9 @@ echo "Removing node modules: $(pwd)/node_modules/"
 rm -rf node_modules;
 echo "Removing npm bulid: $(pwd)/build/"
 rm -rf build;
-sudo npm install;
-sudo npm audit fix;
-npm run build;
+/usr/bin/npm install;
+/usr/bin/npm audit fix;
+/usr/bin/npm run build;
 
 cd ..;
 go_path=$(go env GOPATH)
