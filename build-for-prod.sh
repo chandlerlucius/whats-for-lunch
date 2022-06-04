@@ -7,7 +7,7 @@ rm -rf node_modules;
 echo "Removing npm bulid: $(pwd)/build/"
 rm -rf build;
 /usr/bin/npm install;
-/usr/bin/npm audit fix;
+#/usr/bin/npm audit fix;
 /usr/bin/npm run build;
 
 cd ..;
