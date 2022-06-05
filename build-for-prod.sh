@@ -6,9 +6,10 @@ echo "Removing node modules: $(pwd)/node_modules/"
 rm -rf node_modules;
 echo "Removing npm bulid: $(pwd)/build/"
 rm -rf build;
-/usr/bin/npm install;
-#/usr/bin/npm audit fix;
-/usr/bin/npm run build;
+echo "Running npm install"
+npm install;
+echo "Running npm run build"
+npm run build;
 
 cd ..;
 go_path=$(go env GOPATH)
@@ -22,10 +23,13 @@ mkdir -p "$go_path/src/whats-for-lunch"
 cp -a server/. "$go_path/src/whats-for-lunch/";
 cd "$go_path/src/whats-for-lunch/";
 
-echo "Running go commands"
+echo "Running go get"
 go get;
+echo "Running go clean"
 go clean;
+echo "Running go build"
 go build;
+echo "Running go install"
 go install;
 
 echo "NPM build: $app_dir/client/build"
