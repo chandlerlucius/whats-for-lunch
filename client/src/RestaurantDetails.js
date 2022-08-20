@@ -38,6 +38,10 @@ class RestaurantDetails extends React.Component {
       <div key="website-container" className="flex-center-vertical">
         <img className="detail-icon" alt="Website" src="https://www.gstatic.com/images/icons/material/system_gm/2x/public_gm_blue_24dp.png" />
         <a className="website" target="_blank" rel="noopener noreferrer" href={this.props.place.website}>{url}</a>
+      </div>,
+      <div key="website-menu-container" className="flex-center-vertical">
+        <img className="detail-icon" alt="Website" src="https://www.gstatic.com/images/icons/material/system_gm/2x/restaurant_menu_gm_blue_24dp.png" />
+        <a className="website" target="_blank" rel="noopener noreferrer" href={this.props.place.website + '/menu'}>{url + '/menu'}</a>
       </div>
     ]
   }
