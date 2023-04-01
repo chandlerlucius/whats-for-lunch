@@ -9,6 +9,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -278,33 +280,46 @@ func prepareAndSendSMS(c *websocket.Conn, bytes []byte) error {
 		errorMessage += "Invlalid data sent from client.\n"
 	}
 
-	var keys map[string]string
-	file, err2 := ioutil.ReadFile("keys.json")
-	if err2 != nil {
-		log.Print(err2)
-		errorMessage += "Cannot read keys.json file.\n"
+	if sms.URL == "" {
+		log.Print("Location does not have a google maps destination!")
+		errorMessage += "Location does not have a google maps destination!"
+	} else {
+
+		dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		path := filepath.Join(dir, "keys.json")
+		file, err2 := ioutil.ReadFile(path)
+		if err2 != nil {
+			log.Print(err2)
+			errorMessage += "Cannot read keys.json file.\n"
+		}
+
+		var keys map[string]string
+		err3 := json.Unmarshal([]byte(file), &keys)
+		if err3 != nil {
+			log.Print(err3)
+		}
+
+		link, err4 := shortenLink(sms, keys)
+		if err4 != nil {
+			errorMessage += err4.Error()
+		}
+
+		sms.Link = link
+		err5 := sendSMS(sms, keys)
+		if err5 != nil {
+			errorMessage += err5.Error()
+		}
 	}
 
-	err3 := json.Unmarshal([]byte(file), &keys)
-	if err3 != nil {
-		log.Print(err3)
-	}
-
-	link, err4 := shortenLink(sms, keys)
-	if err4 != nil {
-		errorMessage += err4.Error()
-	}
-	sms.Link = link
-	err5 := sendSMS(sms, keys)
-	if err5 != nil {
-		errorMessage += err5.Error()
-	}
-
-	var err error
+	var err6 error
 	if errorMessage != "" {
-		err = errors.New(errorMessage)
+		err6 = errors.New(errorMessage)
 	}
-	return err
+	return err6
 }
 
 func shortenLink(sms *SMS, keys map[string]string) (string, error) {
