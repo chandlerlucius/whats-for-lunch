@@ -163,20 +163,36 @@ func handleConnection(c *websocket.Conn, userID string) {
 		}
 
 		if websocketMessage.Type == "chat" {
-			chatMessage := &ChatMessage{}
-			chatMessage.Date = time.Now()
-			chatMessage.User = claims.User.ID
-			chatMessage.ID = primitive.NewObjectID()
-			insertDocument(c, bytes, chatMessage, "chat")
+			if len(bytes) > 2000 {
+				message := Message{}
+				message.Status = http.StatusInternalServerError
+				message.Title = "chat"
+				message.Body = "Haha! You tried to break me. Too bad. Try again with a shorter message, matey. "
+				c.WriteJSON(message)
+			} else {
+				chatMessage := &ChatMessage{}
+				chatMessage.Date = time.Now()
+				chatMessage.User = claims.User.ID
+				chatMessage.ID = primitive.NewObjectID()
+				insertDocument(c, bytes, chatMessage, "chat")
+			}
 		} else if websocketMessage.Type == "location" {
-			location := &Location{}
-			location.ID = primitive.NewObjectID()
-			location.Date = time.Now()
-			location.User = claims.User.ID
-			location.VoteCount = 0
-			location.UpVotes = []Vote{}
-			location.DownVotes = []Vote{}
-			insertDocument(c, bytes, location, "location")
+			if len(bytes) > 100 {
+				message := Message{}
+				message.Status = http.StatusInternalServerError
+				message.Title = "location"
+				message.Body = "Haha! You tried to break me. Too bad. Try again with a shorter location, matey. "
+				c.WriteJSON(message)
+			} else {
+				location := &Location{}
+				location.ID = primitive.NewObjectID()
+				location.Date = time.Now()
+				location.User = claims.User.ID
+				location.VoteCount = 0
+				location.UpVotes = []Vote{}
+				location.DownVotes = []Vote{}
+				insertDocument(c, bytes, location, "location")
+			}
 		} else if websocketMessage.Type == "vote" {
 			vote := &Vote{}
 			vote.Date = time.Now()
