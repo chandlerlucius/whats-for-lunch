@@ -179,22 +179,14 @@ func handleConnection(c *websocket.Conn, userID string) {
 				insertDocument(c, bytes, chatMessage, "chat")
 			}
 		} else if websocketMessage.Type == "location" {
-			if len(bytes) > 100 {
-				message := Message{}
-				message.Status = http.StatusInternalServerError
-				message.Title = "location"
-				message.Body = "Haha! You tried to break me. Too bad. Try again with a shorter location, matey. "
-				c.WriteJSON(message)
-			} else {
-				location := &Location{}
-				location.ID = primitive.NewObjectID()
-				location.Date = time.Now()
-				location.User = claims.User.ID
-				location.VoteCount = 0
-				location.UpVotes = []Vote{}
-				location.DownVotes = []Vote{}
-				insertDocument(c, bytes, location, "location")
-			}
+			location := &Location{}
+			location.ID = primitive.NewObjectID()
+			location.Date = time.Now()
+			location.User = claims.User.ID
+			location.VoteCount = 0
+			location.UpVotes = []Vote{}
+			location.DownVotes = []Vote{}
+			insertDocument(c, bytes, location, "location")
 		} else if websocketMessage.Type == "vote" {
 			vote := &Vote{}
 			vote.Date = time.Now()
@@ -853,6 +845,10 @@ func insertDocumentInDatabase(data interface{}, collectionName string) (*mongo.I
 		if ok {
 			if location.Name == "" {
 				err := "Location name cannot be empty!"
+				return nil, errors.New(err)
+			}
+			if len(location.Name) > 100 {
+				err := "Haha! You tried to break me. Too bad. Try again with a shorter location, matey."
 				return nil, errors.New(err)
 			}
 			document := searchDocumentsForName(collectionName, location.Name)
