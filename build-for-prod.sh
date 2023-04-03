@@ -20,7 +20,7 @@ rm -rf "$go_path/bin/whats-for-lunch";
 
 echo "Make go directory and copy over source files"
 mkdir -p "$go_path/src/whats-for-lunch"
-cp -a server/. "$go_path/src/whats-for-lunch/";
+cp -a server/* "$go_path/src/whats-for-lunch/";
 cd "$go_path/src/whats-for-lunch/";
 
 echo "Running go get"
