@@ -12,7 +12,11 @@ echo "Running npm run build"
 npm run build;
 
 cd ..;
-go_path=$(go env GOPATH)
+
+#/usr/local/go/bin/go mod init whatsforlunch
+#/usr/local/go/bin/go mod tidy
+
+go_path=$(/usr/local/go/bin/go env GOPATH)
 echo "Removing go src: $go_path/src/whats-for-lunch/"
 rm -rf "$go_path/src/whats-for-lunch";
 echo "Removing go bin: $go_path/bin/whats-for-lunch"
@@ -24,13 +28,13 @@ cp -a server/* "$go_path/src/whats-for-lunch/";
 cd "$go_path/src/whats-for-lunch/";
 
 echo "Running go get"
-go get;
+/usr/local/go/bin/go get -d;
 echo "Running go clean"
-go clean;
+/usr/local/go/bin/go clean -v;
 echo "Running go build"
-go build;
+/usr/local/go/bin/go build -v;
 echo "Running go install"
-go install;
+/usr/local/go/bin/go install -v;
 
 echo "NPM build: $app_dir/client/build"
 echo "Go binary: $go_path/bin/whats-for-lunch"
