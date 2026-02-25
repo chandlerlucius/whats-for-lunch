@@ -13,8 +13,8 @@ npm run build;
 
 cd ..;
 
-#/usr/local/go/bin/go mod init whatsforlunch
-#/usr/local/go/bin/go mod tidy
+/usr/local/go/bin/go mod init whatsforlunch
+/usr/local/go/bin/go mod tidy
 
 go_path=$(/usr/local/go/bin/go env GOPATH)
 echo "Removing go src: $go_path/src/whats-for-lunch/"
@@ -38,3 +38,8 @@ echo "Running go install"
 
 echo "NPM build: $app_dir/client/build"
 echo "Go binary: $go_path/bin/whats-for-lunch"
+
+# Run as root
+# sudo su
+# npx serve -l 5000 -s /var/www/html/whats-for-lunch/client/build >> /var/www/html/whats-for-lunch/logs/react.log 2>&1 &
+# /var/www/go/bin/whats-for-lunch >>logs/golang.log 2>&1 &
