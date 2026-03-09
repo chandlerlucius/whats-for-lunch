@@ -24,3 +24,15 @@ yarn-error.log*
 
 # VS Code
 /.history
+
+# go stuff
+**/.cache
+**/server/go
+
+# node stuff
+**/.nvm
+**/.npm
+**/update-notifier-npm.json
+
+# logs
+/logs

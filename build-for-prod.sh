@@ -42,4 +42,4 @@ echo "Go binary: $go_path/bin/whats-for-lunch"
 # Run as root
 # sudo su
 # npx serve -l 5000 -s /var/www/html/whats-for-lunch/client/build >> /var/www/html/whats-for-lunch/logs/react.log 2>&1 &
-# /var/www/go/bin/whats-for-lunch >>logs/golang.log 2>&1 &
+# /var/www/go/bin/whats-for-lunch >> /var/www/html/logs/golang.log 2>&1 &
