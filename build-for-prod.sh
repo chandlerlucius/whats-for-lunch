@@ -2,6 +2,16 @@
 app_dir=$(pwd)
 cd client;
 
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
+# Update npm and node
+npm install -g npm
+nvm install --lts
+nvm use --lts
+
+export NODE_OPTIONS=--openssl-legacy-provider
 echo "Removing node modules: $(pwd)/node_modules/"
 rm -rf node_modules;
 echo "Removing npm bulid: $(pwd)/build/"
